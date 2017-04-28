@@ -4,7 +4,7 @@ addpath('bin\FLORISSE_M');           % add FLORIS model files
 addpath('bin\FLORISSE_M\functions'); % add FLORIS model functions
 
 % Plot results
-plotResults = true;
+plotResults = false;
 
 % Import DEL look-up table
 DEL_table = load('./LUT_database/lut_example.mat'); % Load LUT of choice

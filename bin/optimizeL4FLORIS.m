@@ -45,9 +45,20 @@ for k = 1:iterations  % k is the number of iterations
         
         input.yaw  = yaw;
         [turbines, wakes, wtRows] = run_floris(input,modelStruct,turbType,siteStruct);
-
+        
+        
         [P,DEL] = deal(zeros(1,N));
         for turbi = 1:N
+            % Calculate parameters for LUT
+            locTurbi = turbines(turbi).LocWF;
+            largestImpact = turbines(turbi).turbLargestImpact;
+            if isempty(largestImpact) == 0
+                index = wakes(largestImpact).centerLine(1,:)==locTurbi(1);
+                LUTparam(turbi).C2C = abs(locTurbi(2)-wakes(largestImpact).centerLine(2,index));
+                LUTparam(turbi).Dw = wakes(largestImpact).diameters(index,3);
+            end
+            LUTparam(turbi).yaw = turbines(turbi).YawIF;
+            LUTparam(turbi).Ueff = turbines(turbi).windSpeed;
             P(turbi)  = turbines(turbi).power;
             % -- Look up DEL values for flow field with value1, value2, value3 --
             % DEL(turbi)= interpn(DEL_table.param1,DEL_table.param2,DEL_table.param3,...
