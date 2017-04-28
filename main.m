@@ -3,6 +3,9 @@ addpath('bin');                      % add binary files
 addpath('bin\FLORISSE_M');           % add FLORIS model files
 addpath('bin\FLORISSE_M\functions'); % add FLORIS model functions
 
+% Plot results
+plotResults = true;
+
 % Import DEL look-up table
 DEL_table = load('./LUT_database/lut_example.mat'); % Load LUT of choice
 
@@ -34,4 +37,4 @@ optimStruct.axInd           = 1/3*ones(size(siteStruct.LocIF,1)); % Axial induct
 optimStruct.windUncertainty = [-12:4:12];                   % Additional wind disturbance range (symmetric)
 
 % Run optimization
-[yaw_opt,J_Pws_opt,J_DEL_opt,J_sum_opt] = optimizeL4FLORIS(modelStruct,turbType,siteStruct,optimStruct,true);
+[yaw_opt,J_Pws_opt,J_DEL_opt,J_sum_opt] = optimizeL4FLORIS(modelStruct,turbType,siteStruct,optimStruct,plotResults);

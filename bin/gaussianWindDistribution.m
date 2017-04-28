@@ -1,4 +1,4 @@
-function [ Udir_weight_vector ] = gaussianWindDistribution( windDirectionsRange )
+function [ Udir_weight_vector ] = gaussianWindDistribution( windDirectionsRange , plotResults)
     x = [-8+min(windDirectionsRange):0.1:max(windDirectionsRange)+8];
 
     Udir_weight_vector = zeros(length(windDirectionsRange),1);
@@ -16,12 +16,14 @@ function [ Udir_weight_vector ] = gaussianWindDistribution( windDirectionsRange 
     Udir_weight_sum = sum(Udir_weight_vector);
     
     % Figure
-    grid on
-    hold on
-    plot(x,norm)
-    plot((windDirectionsRange),Udir_weight_vector,'r.','MarkerSize',20)
-    title('Normal distribution of wind directions')
-    xlabel('Degrees [^o]')
-    ylabel('Probability [-]')
+    if plotResults
+        grid on
+        hold on
+        plot(x,norm)
+        plot((windDirectionsRange),Udir_weight_vector,'r.','MarkerSize',20)
+        title('Normal distribution of wind directions')
+        xlabel('Degrees [^o]')
+        ylabel('Probability [-]')
+    end
 end
 

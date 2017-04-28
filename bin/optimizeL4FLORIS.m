@@ -11,7 +11,7 @@ N          = size(siteStruct.LocIF,1); % Number of turbines
 windSpeed                = hypot(siteStruct.uInfIf,siteStruct.vInfIf); % Static Wind Speed [m/s]
 windDirection            = atand(siteStruct.vInfIf/siteStruct.uInfIf); % Nominal wind direction
 windInflowDistribution   = windDirection+optimStruct.windUncertainty;  % Uncertain wind directions
-weightsInflowUncertainty = gaussianWindDistribution(windInflowDistribution); % Weights for inflow
+weightsInflowUncertainty = gaussianWindDistribution(windInflowDistribution, plotResults); % Weights for inflow
 
 % Initialize empty GT-theory matrices
 [J_Pws_opt,J_sum_opt] = deal(-1e10);
