@@ -78,7 +78,7 @@ for k = 1:iterations  % k is the number of iterations
     % Calculate collective results over entire wind rose
     sum_Ptot    = Ptot_inflows   * weightsInflowUncertainty;  % Inflow uncertainty-weighed generated power
     sum_DELtot  = DELtot_inflows * weightsInflowUncertainty;  % Inflow uncertainty-weighed turbine DEL values
-    sum_PDELtot = 1-optimStruct.optConst*(Pref-sum_Ptot)^2/Pref - (1-optConst)*sum_DELtot/DELbaseline; % Generate combined power and loads cost function
+    sum_PDELtot = 1-optConst*(Pref-sum_Ptot)^2/Pref^2 - (1-optConst)*sum_DELtot/DELbaseline; % Generate combined power and loads cost function
     
     if (sum_PDELtot >= J_sum_opt | k == 1)
         yaw_opt(k,:) = yaw;
@@ -95,21 +95,26 @@ for k = 1:iterations  % k is the number of iterations
     Pref_plot(k) = Pref;
 end;
 disp([datestr(rem(now,1)) ': Elapsed time is ' num2str(toc) ' seconds.']);
-if plotResults % Plot results
+
+%% Plotting results
+if plotResults
     disp([datestr(rem(now,1)) ': Plotting results...'])
     figure % Cost function
+    subplot(3,1,1);
     plot(J_sum_opt,'Linewidth',2); grid on;
     title('Mixed optimization: Power & Load');
     ylabel('PL-score [-]'); xlabel('Iterations [-]');
     
-    figure % Summed generated power
+    %figure % Summed generated power
+    subplot(3,1,2);
     hold on
     plot(J_Pws_opt/1E6,'Linewidth',2);
     plot(Pref_plot/1E6,'--','Linewidth',1);
     grid on; title('Summed power');
     ylabel('Power [MW]'); xlabel('Iterations [-]');
     
-    figure % Summed DEL values
+    %figure % Summed DEL values
+    subplot(3,1,3);
     plot(J_DEL_opt/1E6,'Linewidth',2)
     grid on; title('Summed DEL values')
     ylabel('DEL (10^6)'); xlabel('Iterations [-]')

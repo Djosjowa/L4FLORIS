@@ -29,8 +29,8 @@ siteStruct.vInfIf   = 0;        % y-direction flow speed inertial frame (m/s)
 siteStruct.rho      = 1.1716;   % Atmospheric air density (kg/m3)
 
 % Setup optimization settings
-optimStruct.optConst        = 0.01;                            % Weighting factor. Power only = 1, Loads only = 0.
-optimStruct.iterations      = 500;                          % Optimization iterations  [-]
+optimStruct.optConst        = 0.5;                            % Weighting factor. Power only = 1, Loads only = 0.
+optimStruct.iterations      = 100;                          % Optimization iterations  [-]
 optimStruct.maxYaw          = +30;                          % Largest  yaw angle [radians]
 optimStruct.minYaw          = -30;                          % Smallest yaw angle [radians]
 optimStruct.axInd           = 1/3*ones(size(siteStruct.LocIF,1)); % Axial induction factors
