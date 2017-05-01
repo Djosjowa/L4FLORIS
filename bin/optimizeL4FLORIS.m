@@ -1,4 +1,4 @@
-function[yaw_opt,J_Pws_opt,J_DEL_opt,J_sum_opt] = optimizeL4FLORIS(modelStruct,turbType,siteStruct,optimStruct,plotResults)
+function[yaw_opt,J_Pws_opt,J_DEL_opt,J_sum_opt] = optimizeL4FLORIS(modelStruct,turbType,siteStruct,optimStruct,DEL_table,plotResults)
 % Optimization parameters
 optConst   = optimStruct.optConst;
 iterations = optimStruct.iterations;
@@ -48,15 +48,19 @@ for k = 1:iterations  % k is the number of iterations
         
         [P,DEL]  = deal(zeros(1,N));
         LUTparam = struct('C2C',[],'Dw',[],'yaw',num2cell(zeros(1,N)),'Ueff',[]);
-
+        
         for turbi = 1:N
-            LUTparam(turbi) = create_LUTparam(turbi,turbines,wakes,LUTparam(turbi)); 
+            LUTparam(turbi) = create_LUTparam(turbi,turbines,wakes,LUTparam(turbi));
             P(turbi) = turbines(turbi).power;
             % -- Look up DEL values for flow field with value1, value2, value3 --
-            % DEL(turbi)= interpn(DEL_table.param1,DEL_table.param2,DEL_table.param3,...
-            %                    DEL_table.table,value1,value2,value3); 
-            DEL(turbi) = 1; % Placeholder
+            DEL(turbi)= interpn(DEL_table.C2C,DEL_table.Dw,DEL_table.Ueff,...
+                                DEL_table.table,LUTparam(turbi).C2C,LUTparam(turbi).Dw,LUTparam(turbi).Ueff); 
+            if isnan(DEL(turbi)) == 1
+                DEL(turbi) = 0;
+            end
+            % DEL(turbi) = 1; % Placeholder
         end;
+        
         Ptot   = sum(P);
         DELtot = sum(DEL);
         
