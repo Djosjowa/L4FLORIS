@@ -52,11 +52,11 @@ for k = 1:iterations  % k is the number of iterations
         for turbi = 1:N
             LUTparam(turbi) = create_LUTparam(turbi,turbines,wakes,LUTparam(turbi));
             P(turbi) = turbines(turbi).power;
-            % -- Look up DEL values for flow field with value1, value2, value3 --
+            % -- Look up DEL values for flow field with C2C, Dw, Ueff
             DEL(turbi)= interpn(DEL_table.C2C,DEL_table.Dw,DEL_table.Ueff,...
                                 DEL_table.table,LUTparam(turbi).C2C,LUTparam(turbi).Dw,LUTparam(turbi).Ueff); 
-            if isnan(DEL(turbi)) == 1
-                DEL(turbi) = 0;
+            if isnan(DEL(turbi)) == 1   % this is a quick fix because values sometimes fall outside the LUT range
+                DEL(turbi) = 0; 
             end
             % DEL(turbi) = 1; % Placeholder
         end;
