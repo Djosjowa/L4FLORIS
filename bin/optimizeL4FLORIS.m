@@ -1,4 +1,4 @@
-function[yaw_opt,J_Pws_opt,J_DEL_opt,J_sum_opt] = optimizeL4FLORIS(modelStruct,turbType,siteStruct,optimStruct,DEL_table,Pref,plotResults)
+function[yaw_opt,J_Pws_opt,J_DEL_opt,J_sum_opt] = optimizeL4FLORIS(modelStruct,turbType,siteStruct,optimStruct,DEL_table,Pref, Pbandwidth,plotResults)
 % Optimization parameters
 optConst   = optimStruct.optConst;
 iterations = optimStruct.iterations;
@@ -6,6 +6,7 @@ input.a    = optimStruct.axInd;
 yawmin     = optimStruct.minYaw;
 yawmax     = optimStruct.maxYaw;
 N          = size(siteStruct.LocIF,1); % Number of turbines
+DELbaseline = mean(mean(mean(DEL_table.table))); % DEL values are scaled with this value in the cost function
 
 Pref_plot  = zeros(iterations,1)';
 
@@ -66,11 +67,6 @@ for k = 1:iterations  % k is the number of iterations
         Ptot   = sum(P);
         DELtot = sum(DEL);
         
-        if k==1 % Set baseline values for k == 1
-            Pbaseline   = Ptot;
-            DELbaseline = DELtot;
-        end;
-        
         Ptot_inflows(1,jj)   = Ptot;   % Store results for each wind direction
         DELtot_inflows(1,jj) = DELtot; % Store results for each wind direction
     end;
@@ -78,18 +74,22 @@ for k = 1:iterations  % k is the number of iterations
     % Calculate collective results over entire wind rose
     sum_Ptot    = Ptot_inflows   * weightsInflowUncertainty;  % Inflow uncertainty-weighed generated power
     sum_DELtot  = DELtot_inflows * weightsInflowUncertainty;  % Inflow uncertainty-weighed turbine DEL values
-    sum_PDELtot = 1-optConst*(Pref-sum_Ptot)^2/Pref^2 - (1-optConst)*sum_DELtot/DELbaseline; % Generate combined power and loads cost function
+    sum_PDELtot = 1-optConst*((Pref-sum_Ptot)/Pbandwidth)^2 - (1-optConst)*sum_DELtot/DELbaseline; % Generate combined power and loads cost function
     
     if (sum_PDELtot >= J_sum_opt | k == 1)
         yaw_opt(k,:) = yaw;
         J_Pws_opt(k) = sum_Ptot;
         J_DEL_opt(k) = sum_DELtot;
         J_sum_opt(k) = sum_PDELtot;
+        J_sum_sub_DEL(k) = sum_DELtot/DELbaseline;
+        J_sum_sub_P(k) = ((Pref-sum_Ptot)/Pbandwidth)^2;
     else % if no improvements: keep optimal solution
         yaw_opt(k,:) = yaw_opt(k-1,:);
         J_Pws_opt(k) = J_Pws_opt(k-1);
         J_DEL_opt(k) = J_DEL_opt(k-1);
         J_sum_opt(k) = J_sum_opt(k-1);
+        J_sum_sub_DEL(k) = J_sum_sub_DEL(k-1);
+        J_sum_sub_P(k) = J_sum_sub_P(k-1);
     end;
     
     Pref_plot(k) = Pref;
@@ -101,11 +101,15 @@ if plotResults
     disp([datestr(rem(now,1)) ': Plotting results...'])
     figure % Cost function
     subplot(3,1,1);
+    hold on;
     plot(J_sum_opt,'Linewidth',2); grid on;
+    plot(J_sum_sub_DEL);
+    plot(J_sum_sub_P);
     title('Mixed optimization: Power & Load');
     ylabel('PL-score [-]'); xlabel('Iterations [-]');
+    legend('PL-score','DEL part','Power part');
     
-    %figure % Summed generated power
+    % Summed generated power
     subplot(3,1,2);
     hold on
     plot(J_Pws_opt/1E6,'Linewidth',2);
@@ -113,7 +117,7 @@ if plotResults
     grid on; title('Summed power');
     ylabel('Power [MW]'); xlabel('Iterations [-]');
     
-    %figure % Summed DEL values
+    % Summed DEL values
     subplot(3,1,3);
     plot(J_DEL_opt/1E6,'Linewidth',2)
     grid on; title('Summed DEL values')
