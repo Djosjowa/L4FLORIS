@@ -7,7 +7,7 @@ addpath('bin\FLORISSE_M\functions'); % add FLORIS model functions
 plotResults = false;
 
 % Import DEL look-up table
-DEL_table = load('./LUT_database/lut_example.mat'); % Load LUT of choice
+DEL_table = load('./LUT_database/LUT_Ben.mat'); % Load LUT of choice
 
 % Load model, turbine and topology settings
 modelStruct = floris_param_model('default');    % Load default FLORIS model settings
