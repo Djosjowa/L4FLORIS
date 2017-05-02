@@ -1,10 +1,9 @@
-function[yaw_opt,J_Pws_opt,J_DEL_opt,J_sum_opt] = optimizeL4FLORIS(modelStruct,turbType,siteStruct,optimStruct,DEL_table,Pref, Pbandwidth,plotResults)
+function[a_opt,J_Pws_opt,J_DEL_opt,J_sum_opt] = optimizeL4FLORIS(modelStruct,turbType,siteStruct,optimStruct,DEL_table,Pref, Pbandwidth,plotResults)
 % Optimization parameters
 optConst   = optimStruct.optConst;
 iterations = optimStruct.iterations;
-input.a    = optimStruct.axInd;
-yawmin     = optimStruct.minYaw;
-yawmax     = optimStruct.maxYaw;
+amin       = optimStruct.minA;
+amax       = optimStruct.maxA;
 N          = size(siteStruct.LocIF,1); % Number of turbines
 DELbaseline = mean(mean(mean(DEL_table.table))); % DEL values are scaled with this value in the cost function
 
@@ -19,8 +18,9 @@ weightsInflowUncertainty = gaussianWindDistribution(windInflowDistribution,plotR
 % Initialize empty GT-theory matrices
 [J_Pws_opt,J_sum_opt] = deal(-1e10);
 J_DEL_opt             = 1e10;
-yaw                   = zeros(N,1);           
-yaw_opt               = zeros(iterations,N); 
+input.yaw             = zeros(N,1);
+a                     = .25*ones(N,1);
+a_opt                 = .25*ones(iterations,N); 
 
 % Perform game-theoretic optimization
 disp([datestr(rem(now,1)) ': Starting GT optimization using FLORIS. [Iterations: ' num2str(iterations) '. Calls to FLORIS: ' num2str(iterations*length(windInflowDistribution)) ']']); tic;
@@ -33,10 +33,10 @@ for k = 1:iterations  % k is the number of iterations
             R1 = rand();            % Random value between [0 1]
             E = 1-k/iterations;     % Sensitivity linearly related to iteration
             if R1 < E
-                R2 = normrnd(0,35); % Perturb with random value [0 10] degrees
-                yaw(i) = max(min(yaw_opt(i)+R2,yawmax),yawmin);
+                R2 = normrnd(0,0.2); % Perturb with random value
+                a(i) = max(min(a_opt(i)+R2,amax),amin);
             else
-                yaw(i) = yaw_opt(k-1,i);   % Keep old yaw setting [degrees]
+                a(i) = a_opt(k-1,i);  
             end;
         end;
     end;
@@ -46,7 +46,8 @@ for k = 1:iterations  % k is the number of iterations
         siteStruct.uInfIf = windSpeed*cosd(windDir);
         siteStruct.vInfIf = windSpeed*sind(windDir);
         
-        input.yaw  = yaw;
+        input.a = a;
+        
         [turbines, wakes, wtRows] = run_floris(input,modelStruct,turbType,siteStruct);
         
         [P,DEL]  = deal(zeros(1,N));
@@ -77,14 +78,14 @@ for k = 1:iterations  % k is the number of iterations
     sum_PDELtot = 1-optConst*((Pref-sum_Ptot)/Pbandwidth)^2 - (1-optConst)*sum_DELtot/DELbaseline; % Generate combined power and loads cost function
     
     if (sum_PDELtot >= J_sum_opt | k == 1)
-        yaw_opt(k,:) = yaw;
+        a_opt(k,:)   = a;
         J_Pws_opt(k) = sum_Ptot;
         J_DEL_opt(k) = sum_DELtot;
         J_sum_opt(k) = sum_PDELtot;
         J_sum_sub_DEL(k) = sum_DELtot/DELbaseline;
         J_sum_sub_P(k) = ((Pref-sum_Ptot)/Pbandwidth)^2;
     else % if no improvements: keep optimal solution
-        yaw_opt(k,:) = yaw_opt(k-1,:);
+        a_opt(k,:)   = a_opt(k-1,:);
         J_Pws_opt(k) = J_Pws_opt(k-1);
         J_DEL_opt(k) = J_DEL_opt(k-1);
         J_sum_opt(k) = J_sum_opt(k-1);
