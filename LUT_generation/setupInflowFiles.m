@@ -8,7 +8,7 @@ inputData.ranges           = {-20:20:20}; %{-20:20:20,6:1:8};     % Ranges to co
 % Set up settings
 inputData.T                 = 276;          % Simulation duration [seconds]
 inputData.dt                = 0.125;        % Timestep for FAST simulations
-inputData.plotProfile       = false;        % Plot the inflow profiles (y,z)
+inputData.plotProfile       = true;        % Plot the inflow profiles (y,z)
 inputData.HH                = 90.0;         % Hub height
 inputData.zWake             = inputData.HH; % Height of wake center
 inputData.yWake             = 0;            % Lateral C2C displacement between rotor and wake
