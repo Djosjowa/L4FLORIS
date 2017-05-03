@@ -40,12 +40,12 @@ for k = 1:iterations  % k is the number of iterations
                 a(i) = max(min(a_opt(i)+R3,amax),amin);
             else
                 a(i) = a_opt(k-1,i);  
-                if R2 < E
-                    R4 = normrnd(0,35);
-                    yaw(i) = max(min(yaw_opt(i)+R4,yawmax),yawmin);
-                else
-                    yaw(i) = yaw_opt(k-1,i);
-                end
+            end
+            if R2 < E
+                R4 = normrnd(0,35);
+                yaw(i) = max(min(yaw_opt(i)+R4,yawmax),yawmin);
+            else
+                yaw(i) = yaw_opt(k-1,i);
             end
         end
     end
@@ -126,7 +126,7 @@ if plotResults
     
     figure 
     % Cost function
-    fig1 = subplot(4,1,1);
+    fig1 = subplot(2,2,1);
     hold on;
     plot(J_sum_opt,'Linewidth',2); grid on;
     plot(J_sum_sub_DEL);
@@ -135,7 +135,7 @@ if plotResults
     ylabel('PL-score [-]'); xlabel('Iterations [-]');
     legend('PL-score','DEL part','Power part');
     
-    fig2 = subplot(4,1,2);
+    fig2 = subplot(2,2,3);
     hold on
     plot(J_sum_opt_95,'Linewidth',2); grid on;
     plot(J_sum_sub_DEL_95);
@@ -145,7 +145,7 @@ if plotResults
     legend('PL-score','DEL part','Power part');
     
     % Summed generated power
-    fig3 = subplot(4,1,3);
+    fig3 = subplot(2,2,2);
     hold on
     plot(J_Pws_opt/1E6,'Linewidth',2);
     plot(Pref_plot/1E6,'--','Linewidth',1);
@@ -153,7 +153,7 @@ if plotResults
     ylabel('Power [MW]'); xlabel('Iterations [-]');
     
     % Summed DEL values
-    fig4 = subplot(4,1,4);
+    fig4 = subplot(2,2,4);
     plot(J_DEL_opt/1E6,'Linewidth',2)
     grid on; title('Summed DEL values')
     ylabel('DEL (10^6)'); xlabel('Iterations [-]')
