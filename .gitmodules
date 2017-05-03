@@ -1,6 +1,6 @@
 [submodule "bin/FLORISSE_M"]
 	path = bin/FLORISSE_M
-	url = https://github.com/Bartdoekemeijer/FLORISSE_M
+url=https://github.com/Djosjowa/FLORISSE_M
 [submodule "LUT_generation/FASTv8GUI"]
 	path = LUT_generation/FASTv8GUI
 	url = https://github.com/sebastiaanmuld/FASTv8GUI
