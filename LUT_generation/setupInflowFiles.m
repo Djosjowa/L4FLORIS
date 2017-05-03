@@ -38,7 +38,7 @@ end;
 mkdir(foldername); % Create folder
 
 % Fill up N-D output filenames matrix & generate inflow profiles
-[filesMat,~] = nested_generateInflows(inputData.parameters,inputData.ranges,inputData)
+[filesMat,~] = nested_generateInflows(inputData.parameters,inputData.ranges,inputData);
 
 % Save workspace for future use
 save(['inflowProfiles/' inputData.destinationFolder '/workspace.mat']);

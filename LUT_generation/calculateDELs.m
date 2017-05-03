@@ -15,7 +15,7 @@ dt          = WS.inputData.dt; % sampling time in seconds
 load('FAST_module\Controller_parameters');   % Load FAST settings
 
 % Evaluate DELs
-[matDELs,~] = nested_calculateDELs(WS)
+[matDELs,~] = nested_calculateDELs(WS);
 %
 disp('Finished calculating DEL table. Saving...');
-save(['..\LUT_database\' inflowSetName '.mat'],'matDELs','WS')
+save(['..\LUT_database\' inflowSetName '.mat'],'matDELs','WS');

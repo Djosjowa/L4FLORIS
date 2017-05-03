@@ -107,7 +107,7 @@ NChannels      ChannelList
 -----  Input Files  ------------------------------------------------------------
 1                 FileFormat         Format of input files.  1 = FAST ascii, 2 = FAST binary
 1  1.1   1.3   1.5   1.7    (Weibull-Weighted Normal Operation: NumNormFiles, PSF1, PSF2, PSF3, PSF4)
-"inter_data.out"
+"FASTTOOL_SFunc.out"
 0  1.1   1.3   1.5   1.7    (Weibull-Weighted Idling: NumIdleFiles, PSF1, PSF2, PSF3, PSF4)
 0  1.2   1.3   1.4   1.6    (Discrete Events: NumDiscFiles, PSF1, PSF2, PSF3, PSF4)
 ==EOF==                             DO NOT REMOVE OR CHANGE.  MUST COME JUST AFTER LAST LINE OF VALID INPUT.
