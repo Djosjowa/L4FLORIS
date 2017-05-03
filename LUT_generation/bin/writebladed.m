@@ -1,11 +1,13 @@
 function writebladed(filename,u,v,w,x,y,z,U)
 % syntax function writebladed(filename,u,v,w,x,y,z,U)
+% Windspeed data get's reformatted to serve as FAST input data
 
 [Nx,Ny,Nz]=size(u);
 
 WW='''w''';
-eval(['fid=fopen(''',filename,'.wnd''',',',WW,');']);
+eval(['fid=fopen(''',filename,'.wnd''',',',WW,');']);   % file is open so data can be written
 
+% different values are getting saved
 New=-99;
 fwrite(fid,New,'int16');
 
@@ -48,6 +50,8 @@ fwrite(fid,100,'float32');
 fwrite(fid,100,'float32');
 fwrite(fid,100,'float32');
 
+% uvw vector is prepared to store the u, w and v data at each point on the
+% yz-plane grid.
 Nplane=Ny*Nz*3;
 Ind1=1:3:Nplane;
 Ind2=2:3:Nplane;
@@ -57,6 +61,8 @@ u=u*1000;
 v=v*1000;
 w=w*1000;
 uvw=zeros(1,Nplane);
+
+% This vector is generated for every value of x and written to the file
 for i=1:Nx,
    uu=reshape(u(i,:,:),1,Ny*Nz);
    vv=reshape(v(i,:,:),1,Ny*Nz);
