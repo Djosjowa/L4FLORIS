@@ -2,13 +2,13 @@ clear all; close all; clc;
 addpath bin % Add binary files (external functions)
 
 % LUT settings: overwrite default parameters
-inputData.parameters       = {'yWake','u_mean'};    % Variable names to cover
-inputData.ranges           = {-20:20:20,6:1:8};     % Ranges to cover for LUT.parameters
+inputData.parameters       = {'yWake'}; %{'yWake','u_mean'};    % Variable names to cover
+inputData.ranges           = {0}; %{-20:20:20,6:1:8};     % Ranges to cover for LUT.parameters
 
 % Set up settings
-inputData.T                 = 10;          % Simulation duration [seconds]
+inputData.T                 = 200;          % Simulation duration [seconds]
 inputData.dt                = 0.125;        % Timestep for FAST simulations
-inputData.plotProfile       = false;        % Plot the inflow profiles (y,z)
+inputData.plotProfile       = true;        % Plot the inflow profiles (y,z)
 inputData.HH                = 90.0;         % Hub height
 inputData.zWake             = inputData.HH; % Height of wake center
 inputData.yWake             = 0;            % Lateral C2C displacement between rotor and wake
@@ -27,14 +27,19 @@ inputData.Gaussian_omegaz = 50;           % Spread for Gaussian wake shape
 
 % Setup destination folder
 foldername = ['inflowProfiles/' inputData.destinationFolder];
-if exist(foldername) % Delete existing folder
-    user_response = input(['Are you sure you want to delete folder ' foldername '? (y/n)  '],'s');
-    if lower(user_response(1)) == 'y'
-        rmdir(foldername ,'s');
-    else
-        error('Please rename the old folder or change the destination folder name.');
-    end;
-end;
+% if exist(foldername) % Delete existing folder
+%     user_response = input(['Are you sure you want to delete folder ' foldername '? (y/n)  '],'s');
+%     if lower(user_response(1)) == 'y'
+%         rmdir(foldername ,'s');
+%     else
+%         error('Please rename the old folder or change the destination folder name.');
+%     end;
+% end;
+if exist(foldername)
+    rmdir(foldername ,'s');
+end
+
+
 mkdir(foldername); % Create folder
 
 % Fill up N-D output filenames matrix & generate inflow profiles

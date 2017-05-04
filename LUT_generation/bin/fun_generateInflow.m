@@ -22,6 +22,7 @@ Nz    = length(z);     % Number of grid points z-
 time      = [dt:dt:T];     % Time vector [s]
 x         = u_mean*time;   % longitudinal dimension [m]
 Nx        = length(x);     % Number of grid points x-
+[Yx,X]     = ndgrid(y,x);    % 2D grid points
 
 wakeGrid = zeros(Ny,Nz); % Calculate wake deficit
 for dyi = 1:Ny
@@ -36,7 +37,7 @@ end;
 u_waked = u_mean*ones(Ny,Nz)-wakeGrid; % maybe add round(..,N)?
 
 if plotProfile
-    clf; contourf(Y,Z,u_waked);
+    figure(1); clf; contourf(Y,Z,u_waked);
     axis equal; xlabel('y (m)'); ylabel('z (m)'); title('Inflow profile (m/s)');
     colorbar; zlabel('Velocity (m/s)'); hold on;
     plot(0,zWake,'r+');
@@ -44,10 +45,21 @@ if plotProfile
 end;
 
 % Copy and add turbulence to the slices
-TI = 0.0; % Currently 0. We have to think about time sampling and TI...
+TI = 0.01; % Currently 0. We have to think about time sampling and TI...
 [u_out,v_out,w_out] = deal(zeros(Nx,Ny,Nz));
 for i = 1:Nx
     u_out(i,:,:) = u_waked+u_waked*(TI*randn);
+end;
+
+% Plot topview
+if plotProfile
+    % generating topview matrix
+    
+    % plotting
+    figure(2); clf; contourf(Yx,X,u_out(:,:,find(z==zWake))');
+    axis equal; xlabel('y (m)'); ylabel('x (m)'); title('Inflow profile topview (m/s)');
+    colorbar; zlabel('Velocity (m/s)'); hold on;
+    drawnow;
 end;
 
 % Save to external files for FAST usage (.wnd)
