@@ -12,6 +12,7 @@ inputData.plotProfile       = true;        % Plot the inflow profiles (y,z)
 inputData.HH                = 90.0;         % Hub height
 inputData.zWake             = inputData.HH; % Height of wake center
 inputData.yWake             = 0;            % Lateral C2C displacement between rotor and wake
+inputData.yaw               = 0;            % windfield is rotated with this angle to simulate a turbine yaw angle
 inputData.destinationFolder = 'C2C_only';   % Destination folder name
 
 % Static settings: vertical grid
