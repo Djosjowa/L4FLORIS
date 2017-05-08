@@ -14,7 +14,7 @@ Gaussian_omegay     = inputData.Gaussian_omegay;
 Gaussian_omegaz     = inputData.Gaussian_omegaz;
 
 % Static settings: vertical grid
-y     = inputData.y;   % lateral dimension (NOTE: MUST BE POSITIVE TO NEGATIVE)
+y     = inputData.y.*cosd(-yaw);   % lateral dimension (NOTE: MUST BE POSITIVE TO NEGATIVE). Multiplied with cosd(-yaw) to compensate for resolution los in rotation of windfield
 z     = inputData.z;   % vertical dimension
 Ny    = length(y);     % Number of grid points y-
 Nz    = length(z);     % Number of grid points z-
@@ -46,22 +46,11 @@ if yaw == 0
     end;
     
 else % if yaw angle isn't zero, rotate the windfield
-    % Rotate u_waked and the Y matrix
-    % initialization of vectors for the rotated windspeed vectors
-    rotu_waked = zeros(size(u_waked));
-    rotv_waked = zeros(size(u_waked));
-
-    % for each point in the yz-grid the location and the windspeed vectors
-    % are rotated
-    for iy = 1:length(y)
-        for iz = 1:length(z)
-            rotXYZ = rotz(yaw)*[0 ; Y(iy,iz) ; Z(iy,iz)];
-            rotuvw = rotz(yaw)*[u_waked(iy,iz) ; 0 ; 0];
-            Y(iy,iz) = rotXYZ(2);
-            rotu_waked(iy,iz) = rotuvw(1);
-            rotv_waked(iy,iz) = rotuvw(2);
-        end
-    end
+    % Rotate u_waked and scale the Y matrix
+    
+    rotu_waked = u_waked.*cosd(-yaw);
+    rotv_waked = u_waked.*sind(-yaw);
+    Yrot = Y./cosd(-yaw);
     
     % Copy  the slices
     % Turbulence is ignored here for now, can be added later
@@ -72,23 +61,30 @@ else % if yaw angle isn't zero, rotate the windfield
     end;
 end
 
-% save('plot_data','u_mean','wakeGrid','u_waked','u_out','v_out','w_out','Y','Z','Yx','X','x','y','z');
-
 % Plotting wake profile
 if plotProfile
+    
     % Plot front profile
     figure(1); clf; 
-    contourf(Y,Z,reshape(u_out(1,:,:),[size(u_waked)]));
+%     sp1 = subplot(2,1,1);
+    contourf(Yrot,Z,reshape(u_out(1,:,:),[size(u_waked)]));
     axis equal; xlabel('y (m)'); ylabel('z (m)'); title('Inflow profile (m/s)');
     colorbar; zlabel('Velocity in x direction (m/s)'); hold on;
     plot(0,zWake,'r+');
     drawnow;
+    
+%     sp2 = subplot(2,1,2); contourf(Y,Z,u_waked);
+%     axis equal; xlabel('y (m)'); ylabel('z (m)'); title('Inflow profile original (m/s)');
+%     colorbar; zlabel('Velocity in x direction (m/s)'); hold on; linkaxes
+%     plot(0,zWake,'r+'); linkaxes([sp1 sp2],'x');
+%     drawnow;
+%     set([sp1 sp2],'clim',[3 8]);
 end;
 
 % Save to external files for FAST usage (.wnd)
 % --- filename needs to be extended according to added dimensions to LUT ---
 %filename = ['inflowProfiles/' destinationFolder '/' inflowFilename(inputData)];
-writebladed(filename,(u_out-u_mean)/u_mean,v_out,w_out,x,Y(:,1)',z,u_mean); % Y(:,1)' instead of y is given to still be correct when windfield is rotated
+writebladed(filename,(u_out-u_mean)/u_mean,v_out,w_out,x,Yrot(:,1)',z,u_mean); % Yrot(:,1)' instead of y is given to still be correct when windfield is rotated
 fid = fopen([filename, '.sum'], 'wt'); % Write .sum file
 fprintf(fid, 'T\tCLOCKWISE\n');
 fprintf(fid, '%0.0f\tHUB HEIGHT\n\n', HH);
