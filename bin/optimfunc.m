@@ -6,8 +6,8 @@ optConst    = optimStruct.optConst;
 Pref        = optimStruct.Pref;
 Pbandwidth  = optimStruct.Pbandwidth;
 DELbaseline = mean(mean(mean(DEL_table.table)));    % DEL values are scaled with this value in the cost function
-a     = put(:,1);
-yaw   = put(:,2);
+a     = put(1:9);
+yaw   = put(10:18);
 input.a = a;
 input.yaw = yaw;
 % Calculate windspeed distribution in wind-aligned frame
@@ -48,4 +48,4 @@ end
 % Costfunction
 sum_Ptot    = Ptot_inflows   * weightsInflowUncertainty;  % Inflow uncertainty-weighed generated power
 sum_DELtot  = DELtot_inflows * weightsInflowUncertainty;  % Inflow uncertainty-weighed turbine DEL values
-sum_PDELtot = 1-optConst*((Pref-sum_Ptot)/Pbandwidth)^2 - (1-optConst)*sum_DELtot/DELbaseline; % Generate combined power and loads cost function
+sum_PDELtot = optConst*((Pref-sum_Ptot)/Pbandwidth)^2 + (1-optConst)*sum_DELtot/DELbaseline; % Generate combined power and loads cost function

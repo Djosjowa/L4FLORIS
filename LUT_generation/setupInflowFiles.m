@@ -3,10 +3,10 @@ addpath bin % Add binary files (external functions)
 
 % LUT settings: overwrite default parameters
 inputData.parameters       = {'yWake'}; %{'yWake','u_mean'};    % Variable names to cover
-inputData.ranges           = {-20:20:20}; %{-20:20:20,6:1:8};     % Ranges to cover for LUT.parameters
+inputData.ranges           = {0}; %{-20:20:20,6:1:8};     % Ranges to cover for LUT.parameters
 
 % Set up settings
-inputData.T                 = 276;          % Simulation duration [seconds]
+inputData.T                 = 200;          % Simulation duration [seconds]
 inputData.dt                = 0.125;        % Timestep for FAST simulations
 inputData.plotProfile       = true;        % Plot the inflow profiles (y,z)
 inputData.HH                = 90.0;         % Hub height

@@ -31,7 +31,7 @@ siteStruct.rho      = 1.1716;   % Atmospheric air density (kg/m3)
 
 % Setup optimization settings
 optimStruct.optConst        = 0.5;                          % Weighting factor. Power only = 1, Loads only = 0.
-optimStruct.iterations      = 1;                          % Optimization iterations  [-]
+optimStruct.iterations      = 10;                          % Optimization iterations  [-]
 optimStruct.maxYaw          = +30;                          % Largest  yaw angle [radians]
 optimStruct.minYaw          = -30;                          % Smallest yaw angle [radians]
 optimStruct.axInd           = 0.25;                         % Axial induction factors

@@ -41,10 +41,19 @@ optimStruct.Pref            = 10*10^6;     % Reference power [W]
 optimStruct.Pbandwidth      = 0.05*10^6;
 
 %optimization
-input  = [1/3.*ones(9,1),zeros(9,1)];
-output = optimfunc(input,optimStruct,siteStruct,modelStruct,turbType,DEL_table,plotResults);
+input0 = [.25.*ones(1,9),zeros(1,9)];
+yawmin = -30;
+yawmax = 30;
+amin   = 0;
+amax   = 0.31;
+lb     = [amin*ones(1,9),yawmin*ones(1,9)];
+ub     = [amax.*ones(1,9),yawmax*ones(1,9)];
+A = [];
+b = [];
 
+output = @(input)optimfunc(input,optimStruct,siteStruct,modelStruct,turbType,DEL_table,plotResults);
 
+[input,fval] = fmincon(output,input0,A,b,lb,ub)
 
 
 
