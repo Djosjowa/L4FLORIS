@@ -1,4 +1,4 @@
-function[a_opt,yaw_opt,J_Pws_opt,J_DEL_opt,J_sum_opt] = optimizeL4FLORIS(modelStruct,turbType,siteStruct,optimStruct,DEL_table,Pref, Pbandwidth,plotResults)
+function[a_opt,yaw_opt,J_Pws_opt,J_DEL_opt,J_sum_opt] = optimizeL4FLORIS(modelStruct,turbType,siteStruct,optimStruct,DEL_table,plotResults)
 % Optimization parameters
 optConst   = optimStruct.optConst;
 iterations = optimStruct.iterations;
@@ -6,6 +6,8 @@ amin       = optimStruct.minA;
 amax       = optimStruct.maxA;
 yawmin     = optimStruct.minYaw;
 yawmax     = optimStruct.maxYaw;
+Pref       = optimStruct.Pref;
+Pbandwidth = optimStruct.Pbandwidth;
 N          = size(siteStruct.LocIF,1); % Number of turbines
 DELbaseline = mean(mean(mean(DEL_table.table))); % DEL values are scaled with this value in the cost function
 Pref_plot  = zeros(iterations,1)';

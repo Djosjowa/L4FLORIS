@@ -31,15 +31,23 @@ siteStruct.rho      = 1.1716;   % Atmospheric air density (kg/m3)
 
 % Setup optimization settings
 optimStruct.optConst        = 0.5;                          % Weighting factor. Power only = 1, Loads only = 0.
-optimStruct.iterations      = 1;                          % Optimization iterations  [-]
+optimStruct.iterations      = 100;                          % Optimization iterations  [-]
 optimStruct.maxYaw          = +30;                          % Largest  yaw angle [radians]
 optimStruct.minYaw          = -30;                          % Smallest yaw angle [radians]
-optimStruct.axInd           = 0.25;                         % Axial induction factors
 optimStruct.windUncertainty = [-12:4:12];                   % Additional wind disturbance range (symmetric)
 optimStruct.minA            = 0;
 optimStruct.maxA            = 0.31;
 optimStruct.Pref            = 10*10^6;     % Reference power [W]
 optimStruct.Pbandwidth      = 0.05*10^6;
 
-% Run optimization
-[a_opt,yaw_opt,J_Pws_opt,J_DEL_opt,J_sum_opt] = optimizeL4FLORIS(modelStruct,turbType,siteStruct,optimStruct,DEL_table,plotResults);
+%optimization
+input  = [1/3.*ones(9,1),zeros(9,1)];
+output = optimfunc(input,optimStruct,siteStruct,modelStruct,turbType,DEL_table,plotResults);
+
+
+
+
+
+
+
+
