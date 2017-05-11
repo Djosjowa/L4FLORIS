@@ -8,7 +8,7 @@ HH                  = inputData.HH;
 yWake               = inputData.yWake;
 zWake               = inputData.zWake;
 yaw                 = inputData.yaw;
-u_mean              = inputData.u_mean;     
+u_fs                = inputData.u_fs;     
 Gaussian_A          = inputData.Gaussian_A;
 Gaussian_omegay     = inputData.Gaussian_omegay;
 Gaussian_omegaz     = inputData.Gaussian_omegaz;
@@ -22,7 +22,7 @@ Nz    = length(z);     % Number of grid points z-
 [Y,Z] = ndgrid(y,z);   % 2D grid points
 
 time      = [dt:dt:T];     % Time vector [s]
-x         = u_mean*time;   % longitudinal dimension [m]
+x         = u_fs*time;     % longitudinal dimension [m]
 Nx        = length(x);     % Number of grid points x-
 
 wakeGrid = zeros(Ny,Nz); % Calculate wake deficit
@@ -36,19 +36,22 @@ for dyi = 1:Ny
 end;
 
 % Calculate one slice of the windfield
-u_waked = u_mean*ones(Ny,Nz)-wakeGrid; % maybe add round(..,N)?
-
+u_waked = u_fs*ones(Ny,Nz)-wakeGrid; % maybe add round(..,N)?
 if yaw == 0
+    u_mean = u_fs; v_mean = 0;  % u_mean is the same as free stream velocity
     % Copy and add turbulence to the slices
-    TI = 0.01; % Currently 0. We have to think about time sampling and TI...
+    TI = 0.0; % Currently 0. We have to think about time sampling and TI...
     [u_out,v_out,w_out] = deal(zeros(Nx,Ny,Nz));
     for i = 1:Nx
         u_out(i,:,:) = u_waked+u_waked*(TI*randn);
     end;
     
 else % if yaw angle isn't zero, rotate the windfield
-    % Rotate u_waked
+    % calculate u_mean and v_mean
+    u_mean = u_fs*cosd(-yaw);
+    v_mean = u_fs*sind(-yaw);
     
+    % Rotate u_waked
     rotu_waked = u_waked.*cosd(-yaw);
     rotv_waked = u_waked.*sind(-yaw);
     
@@ -84,11 +87,15 @@ end;
 % Save to external files for FAST usage (.wnd)
 % --- filename needs to be extended according to added dimensions to LUT ---
 %filename = ['inflowProfiles/' destinationFolder '/' inflowFilename(inputData)];
-writebladed(filename,(u_out-u_mean)/u_mean,v_out,w_out,x,y,z,u_mean); % Yrot(:,1)' instead of y is given to still be correct when windfield is rotated
+if(yaw==0)
+    writebladed(filename,(u_out-u_mean)/u_mean,v_out,w_out,x,y,z,u_fs);
+else
+    writebladed(filename,(u_out-u_mean)/u_mean,(v_out-v_mean)/v_mean,w_out,x,y,z,u_fs);
+end
 fid = fopen([filename, '.sum'], 'wt'); % Write .sum file
 fprintf(fid, 'T\tCLOCKWISE\n');
 fprintf(fid, '%0.0f\tHUB HEIGHT\n\n', HH);
-fprintf(fid, '%0.3f\tUBAR\n', u_mean);
+fprintf(fid, '%0.3f\tUBAR\n', u_fs);
 fprintf(fid, '%0.3f\tTI(u)\n', 100);
 fprintf(fid, '%0.3f\tTI(v)\n', 100);
 fprintf(fid, '%0.3f\tTI(w)\n\n', 100);
