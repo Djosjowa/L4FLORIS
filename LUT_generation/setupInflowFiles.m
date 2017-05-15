@@ -2,8 +2,8 @@ clear all; close all; clc; tic;
 addpath bin % Add binary files (external functions)
 
 % LUT settings: overwrite default parameters
-inputData.parameters       = {'yaw'}; %{'yWake','u_mean'};    % Variable names to cover
-inputData.ranges           = {0}; %{-20:20:20,6:1:8};     % Ranges to cover for LUT.parameters
+inputData.parameters       = {'yWake'}; %{'yWake','u_mean'};    % Variable names to cover
+inputData.ranges           = {-20:10:20}; %{-20:20:20,6:1:8};     % Ranges to cover for LUT.parameters
 
 % Set up settings
 inputData.T                 = 200;          % Simulation duration [seconds]
