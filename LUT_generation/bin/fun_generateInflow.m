@@ -32,8 +32,8 @@ for dyi = 1:Ny
         dz = z(dzi)-zWake;
         wakeGrid(dyi,dzi) = Gaussian_A * exp(-(  ((dy.^2)/(2*Gaussian_omegay^2) + (dz.^2)/(2*Gaussian_omegaz^2))  ));
         % https://en.wikipedia.org/wiki/Gaussian_function#Two-dimensional_Gaussian_function
-    end;
-end;
+    end
+end
 
 % Calculate one slice of the windfield
 u_waked = u_fs*ones(Ny,Nz)-wakeGrid; % maybe add round(..,N)?
@@ -44,7 +44,7 @@ if yaw == 0
     [u_out,v_out,w_out] = deal(zeros(Nx,Ny,Nz));
     for i = 1:Nx
         u_out(i,:,:) = u_waked+u_waked*(TI*randn);
-    end;
+    end
     
 else % if yaw angle isn't zero, rotate the windfield
     % calculate u_mean and v_mean
@@ -61,7 +61,7 @@ else % if yaw angle isn't zero, rotate the windfield
     for i = 1:Nx
         u_out(i,:,:) = rotu_waked;
         v_out(i,:,:) = rotv_waked;
-    end;
+    end
 end
 
 % Plotting wake profile
@@ -87,11 +87,12 @@ end;
 % Save to external files for FAST usage (.wnd)
 % --- filename needs to be extended according to added dimensions to LUT ---
 %filename = ['inflowProfiles/' destinationFolder '/' inflowFilename(inputData)];
-if(yaw==0)
-    writebladed(filename,(u_out-u_mean)/u_mean,v_out,w_out,x,y,z,u_fs);
-else
-    writebladed(filename,(u_out-u_mean)/u_mean,(v_out-v_mean)/v_mean,w_out,x,y,z,u_fs);
-end
+% if(yaw==0)
+%     writebladed(filename,(u_out-u_mean)/u_mean,v_out,w_out,x,y,z,u_fs);
+% else
+%     writebladed(filename,(u_out-u_mean)/u_mean,(v_out-v_mean)/v_mean,w_out,x,y,z,u_fs);
+% end
+writebladed(filename,u_out,v_out,w_out,x,y,z,u_fs);
 fid = fopen([filename, '.sum'], 'wt'); % Write .sum file
 fprintf(fid, 'T\tCLOCKWISE\n');
 fprintf(fid, '%0.0f\tHUB HEIGHT\n\n', HH);
