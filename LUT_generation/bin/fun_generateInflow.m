@@ -28,6 +28,9 @@ q1   = 1;                   % Q value innermost wakezone
 q3   = 3;                   % Q value outermost wakezone
 yawt = 0;                   % Yaw upstream turbine          [deg]
 
+%% Parameter Shear effect
+alfa = 0.1;                 % Constant for shear effect on smooth surfaces(oceans, sand, etc.)
+
 %% Static settings: vertical grid
 y     = inputData.y;   % lateral dimension (NOTE: MUST BE POSITIVE TO NEGATIVE).
 y_rot = y.*cosd(-yaw); % used instead of y, when there is a yaw angle. Compensates for resolution loss when rotating windfield
@@ -57,6 +60,16 @@ Nx        = length(x);     % Number of grid points x-
         
     
     end
+    
+%% Shear effects
+
+for a = 2:length(z)
+    v(a) = u_fs/((HH/z(a))^alfa); % Velocity distrubution in z-direction due to shear effects
+end
+
+proc = v/u_fs;                    % Calculates for each row in z-direction the percentage of U  Free Stream
+
+
 %%  Gaussian shape
 Gaussian_omegay = Dwake/4;
 Gaussian_omegaz = Dwake/4;
@@ -73,13 +86,18 @@ end;
 
 % Calculate one slice of the windfield
 u_waked = u_fs*ones(Ny,Nz)-wakeGrid; % maybe add round(..,N)?
+%% calculate windfield with shear effects
+for b = 1:length(z)
+    u_waked_shear(:,b) = proc(b)*u_waked(:,b);
+end
+
 if yaw == 0
     u_mean = u_fs; v_mean = 0;  % u_mean is the same as free stream velocity
     % Copy and add turbulence to the slices
     TI = 0.0; % Currently 0. We have to think about time sampling and TI...
     [u_out,v_out,w_out] = deal(zeros(Nx,Ny,Nz));
     for i = 1:Nx
-        u_out(i,:,:) = u_waked+u_waked*(TI*randn);
+        u_out(i,:,:) = u_waked_shear+u_waked_shear*(TI*randn);
     end
     
 else % if yaw angle isn't zero, rotate the windfield
@@ -88,8 +106,8 @@ else % if yaw angle isn't zero, rotate the windfield
     v_mean = u_fs*sind(-yaw);
     
     % Rotate u_waked
-    rotu_waked = u_waked.*cosd(-yaw);
-    rotv_waked = u_waked.*sind(-yaw);
+    rotu_waked = u_waked_shear.*cosd(-yaw);
+    rotv_waked = u_waked_shear.*sind(-yaw);
     
     % Copy  the slices
     % Turbulence is ignored here for now, can be added later
@@ -106,7 +124,7 @@ if plotProfile
     % Plot front profile
     figure(1); clf; 
 %     sp1 = subplot(2,1,1);
-    contourf(Y,Z,reshape(u_out(1,:,:),[size(u_waked)]));
+    contourf(Y,Z,reshape(u_out(1,:,:),[size(u_waked_shear)]));
     axis equal; xlabel('y (m)'); ylabel('z (m)'); title('Inflow profile (m/s)');
     colorbar; zlabel('Velocity in x direction (m/s)'); hold on;
     plot(0,zWake,'r+');
