@@ -4,16 +4,19 @@ function [] = fun_generateInflow(inputData,filename)
 T                   = inputData.T;        
 dt                  = inputData.dt;   
 plotProfile         = inputData.plotProfile;
-HH                  = inputData.HH;   
+HH                  = inputData.HH;
 yWake               = inputData.yWake;
 zWake               = inputData.zWake;
 yaw                 = inputData.yaw;
-u_fs                = inputData.u_fs;     
+U_fs                = inputData.U_fs;     
 Gaussian_A          = inputData.Gaussian_A;
 Gaussian_omegay     = inputData.Gaussian_omegay;
 Gaussian_omegaz     = inputData.Gaussian_omegaz;
-D                   = inputData.D; 
+Drotor              = inputData.Drotor; 
 Dwake               = inputData.Dwake;
+shear_const         = inputData.shear_const;
+doWindShear         = inputData.doWindShear;
+
 
 %% Parameters Formules Gebraad
 
@@ -26,10 +29,7 @@ M_U  = [0.5 1 5.5];         % Gebraad                       [-]
 X    = 0;                   % Turbine location which creates the downstream flow [m]
 q1   = 1;                   % Q value innermost wakezone
 q3   = 3;                   % Q value outermost wakezone
-yawt = 0;                   % Yaw upstream turbine          [deg]
-
-%% Parameter Shear effect
-alfa = 0.1;                 % Constant for shear effect on smooth surfaces(oceans, sand, etc.)
+yawt = 0;                   % Yaw upstream turbine          [deg]            
 
 %% Static settings: vertical grid
 y     = inputData.y;   % lateral dimension (NOTE: MUST BE POSITIVE TO NEGATIVE).
@@ -40,36 +40,21 @@ Nz    = length(z);     % Number of grid points z-
 [Y,Z] = ndgrid(y,z);   % 2D grid points
 
 time      = [dt:dt:T];     % Time vector [s]
-x         = u_fs*time;     % longitudinal dimension [m]
+x         = U_fs*time;     % longitudinal dimension [m]
 Nx        = length(x);     % Number of grid points x-
 
 %% Wake Zone Formula's Gebraad 
-
-      
-   xwake = X + (Dwake - D)/(2*k_e*m_e(q3));
-
-
-   
- %Get the value of Ueff coupled to the length in x-direction
-    for q = 1:3
-        m_u(q)  = M_U(q)/((cosd(a_U+b_U*yawt)));
-
-        c(q)    = ((D/(D+2*k_e*m_u(q)*(xwake-X)))^2);
-
-        Ueff(q) = u_fs*(1-2*ai*c(q));
-        
     
-    end
+xwake = X + (Dwake - Drotor)/(2*k_e*m_e(q3));
+
+%Get the value of Ueff coupled to the length in x-direction
+[m_u,c,Ueff] = deal(zeros(1,3));    % initialize vectors
+for q = 1:3
+    m_u(q)  = M_U(q)/((cosd(a_U+b_U*yawt)));
+    c(q)    = ((Drotor/(Drotor+2*k_e*m_u(q)*(xwake-X)))^2);
+    Ueff(q) = U_fs*(1-2*ai*c(q));
+ end
     
-%% Shear effects
-
-for a = 2:length(z)
-    v(a) = u_fs/((HH/z(a))^alfa); % Velocity distrubution in z-direction due to shear effects
-end
-
-proc = v/u_fs;                    % Calculates for each row in z-direction the percentage of U  Free Stream
-
-
 %%  Gaussian shape
 Gaussian_omegay = Dwake/4;
 Gaussian_omegaz = Dwake/4;
@@ -79,35 +64,46 @@ for dyi = 1:Ny
     dy = y_rot(dyi)-yWake;
     for dzi = 1:Nz
         dz = z(dzi)-zWake;
-        wakeGrid(dyi,dzi) =  ((u_fs-Ueff(q1))* exp(-(  ((dy.^2)/(2*Gaussian_omegay^2) + (dz.^2)/(2*Gaussian_omegaz^2))  )));
+        wakeGrid(dyi,dzi) =  ((U_fs-Ueff(q1))* exp(-(  ((dy.^2)/(2*Gaussian_omegay^2) + (dz.^2)/(2*Gaussian_omegaz^2))  )));
         % https://en.wikipedia.org/wiki/Gaussian_function#Two-dimensional_Gaussian_function
-    end;
-end;
-
-% Calculate one slice of the windfield
-u_waked = u_fs*ones(Ny,Nz)-wakeGrid; % maybe add round(..,N)?
-%% calculate windfield with shear effects
-for b = 1:length(z)
-    u_waked_shear(:,b) = proc(b)*u_waked(:,b);
+    end
 end
 
+% Calculate one slice of the windfield
+u_waked = U_fs*ones(Ny,Nz)-wakeGrid; % maybe add round(..,N)?
+%% calculate windfield with shear effects
+
+if(doWindShear)
+    % Calculate shear effects
+    v = zeros(1,length(z)-1);   % initialize vector
+    for i = 2:length(z)
+        v(i) = U_fs/((HH/z(i))^shear_const); % Velocity distribution in z-direction due to shear effects
+    end
+
+    % apply wind shear to windfield
+    for i = 1:length(z)
+        u_waked(:,i) = u_waked(:,i)*(v(i)/U_fs);    % multiply u_waked with normalized velocity distribution
+    end
+end
+
+% generate u_out, v_out, w_out and apply yaw to windfield if needed
 if yaw == 0
-    u_mean = u_fs; v_mean = 0;  % u_mean is the same as free stream velocity
+    u_fs = U_fs; v_fs = 0;
     % Copy and add turbulence to the slices
     TI = 0.0; % Currently 0. We have to think about time sampling and TI...
     [u_out,v_out,w_out] = deal(zeros(Nx,Ny,Nz));
     for i = 1:Nx
-        u_out(i,:,:) = u_waked_shear+u_waked_shear*(TI*randn);
+        u_out(i,:,:) = u_waked+u_waked*(TI*randn);
     end
     
 else % if yaw angle isn't zero, rotate the windfield
     % calculate u_mean and v_mean
-    u_mean = u_fs*cosd(-yaw);
-    v_mean = u_fs*sind(-yaw);
+    u_fs = U_fs*cosd(-yaw);
+    v_fs = U_fs*sind(-yaw);
     
     % Rotate u_waked
-    rotu_waked = u_waked_shear.*cosd(-yaw);
-    rotv_waked = u_waked_shear.*sind(-yaw);
+    rotu_waked = u_waked.*cosd(-yaw);
+    rotv_waked = u_waked.*sind(-yaw);
     
     % Copy  the slices
     % Turbulence is ignored here for now, can be added later
@@ -115,7 +111,7 @@ else % if yaw angle isn't zero, rotate the windfield
     for i = 1:Nx
         u_out(i,:,:) = rotu_waked;
         v_out(i,:,:) = rotv_waked;
-    end;
+    end
 end
 
 % Plotting wake profile
@@ -124,7 +120,7 @@ if plotProfile
     % Plot front profile
     figure(1); clf; 
 %     sp1 = subplot(2,1,1);
-    contourf(Y,Z,reshape(u_out(1,:,:),[size(u_waked_shear)]));
+    contourf(Y,Z,reshape(u_out(1,:,:),[size(u_waked)]));
     axis equal; xlabel('y (m)'); ylabel('z (m)'); title('Inflow profile (m/s)');
     colorbar; zlabel('Velocity in x direction (m/s)'); hold on;
     plot(0,zWake,'r+');
@@ -136,20 +132,20 @@ if plotProfile
 %     plot(0,zWake,'r+'); linkaxes([sp1 sp2],'x');
 %     drawnow;
 %     set([sp1 sp2],'clim',[3 8]);
-end;
+end
 
 % Save to external files for FAST usage (.wnd)
 % --- filename needs to be extended according to added dimensions to LUT ---
 %filename = ['inflowProfiles/' destinationFolder '/' inflowFilename(inputData)];
 if(yaw==0)
-    writebladed(filename,(u_out-u_mean)/u_mean,v_out,w_out,x,y,z,u_fs);
+    writebladed(filename,(u_out-u_fs)/u_fs,v_out,w_out,x,y,z,U_fs);
 else
-    writebladed(filename,(u_out-u_mean)/u_mean,(v_out-v_mean)/v_mean,w_out,x,y,z,u_fs);
+    writebladed(filename,(u_out-u_fs)/u_fs,(v_out-v_fs)/v_fs,w_out,x,y,z,U_fs);
 end
 fid = fopen([filename, '.sum'], 'wt'); % Write .sum file
 fprintf(fid, 'T\tCLOCKWISE\n');
 fprintf(fid, '%0.0f\tHUB HEIGHT\n\n', HH);
-fprintf(fid, '%0.3f\tUBAR\n', u_fs);
+fprintf(fid, '%0.3f\tUBAR\n', U_fs);
 fprintf(fid, '%0.3f\tTI(u)\n', 100);
 fprintf(fid, '%0.3f\tTI(v)\n', 100);
 fprintf(fid, '%0.3f\tTI(w)\n\n', 100);
