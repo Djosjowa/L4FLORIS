@@ -2,17 +2,17 @@ clear all; close all; clc; tic;
 addpath bin % Add binary files (external functions)
 
 % LUT settings: overwrite default parameters
-inputData.parameters       = {'yaw'}; %{'yWake','u_mean'};    % Variable names to cover
-inputData.ranges           = {-30:10:30}; %{-20:20:20,6:1:8};     % Ranges to cover for LUT.parameters
+inputData.parameters       = {'Dwake','u_fs','yaw','yWake'}; %{'yWake','u_mean'};    % Variable names to cover
+inputData.ranges           = {300,8,0,0}; %{-20:20:20,6:1:8};     % Ranges to cover for LUT.parameters
 
 % Set up settings
 inputData.T                 = 200;          % Simulation duration [seconds]
 inputData.dt                = 0.250;        % Timestep for FAST simulations
-inputData.plotProfile       = false;        % Plot the inflow profiles (y,z)
+inputData.plotProfile       = true;        % Plot the inflow profiles (y,z)
 inputData.HH                = 90.0;         % Hub height
 inputData.zWake             = inputData.HH; % Height of wake center
 inputData.yWake             = 0;            % Lateral C2C displacement between rotor and wake
-inputData.yaw               = 20;           % yaw angle of turbine [degrees]
+inputData.yaw               = 0;           % yaw angle of turbine [degrees]
 inputData.destinationFolder = 'C2C_only';   % Destination folder name
 
 % Static settings: vertical grid
@@ -24,6 +24,8 @@ inputData.u_fs            = 8.0;          % Freestream wind speed [m/s]
 inputData.Gaussian_A      = 5;            % Wake deficit in center [m/s]
 inputData.Gaussian_omegay = 50;           % Spread for Gaussian wake shape
 inputData.Gaussian_omegaz = 50;           % Spread for Gaussian wake shape
+inputData.D               = 126.4;        % Diameter rotor
+inputData.Dwake           = 176.4;        % Diameter outerwake
 % https://en.wikipedia.org/wiki/Gaussian_function#Two-dimensional_Gaussian_function
 
 % Setup destination folder

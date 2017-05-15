@@ -12,8 +12,23 @@ u_fs                = inputData.u_fs;
 Gaussian_A          = inputData.Gaussian_A;
 Gaussian_omegay     = inputData.Gaussian_omegay;
 Gaussian_omegaz     = inputData.Gaussian_omegaz;
+D                   = inputData.D; 
+Dwake               = inputData.Dwake;
 
-% Static settings: vertical grid
+%% Parameters Formules Gebraad
+
+ai   = 1/3;                 % Axial Induction Factor        [-]
+k_e  = 0.065;               % Gebraad                       [-]
+m_e  = [-0.5 0.22 1];       % Gebraad                       [-]
+a_U  = 5;                   % Gebraad                       [-]
+b_U  = 1.66;                % Gebraad                       [-]
+M_U  = [0.5 1 5.5];         % Gebraad                       [-]
+X    = 0;                   % Turbine location which creates the downstream flow [m]
+q1   = 1;                   % Q value innermost wakezone
+q3   = 3;                   % Q value outermost wakezone
+yawt = 0;                   % Yaw upstream turbine          [deg]
+
+%% Static settings: vertical grid
 y     = inputData.y;   % lateral dimension (NOTE: MUST BE POSITIVE TO NEGATIVE).
 y_rot = y.*cosd(-yaw); % used instead of y, when there is a yaw angle. Compensates for resolution loss when rotating windfield
 z     = inputData.z;   % vertical dimension
@@ -25,12 +40,33 @@ time      = [dt:dt:T];     % Time vector [s]
 x         = u_fs*time;     % longitudinal dimension [m]
 Nx        = length(x);     % Number of grid points x-
 
+%% Wake Zone Formula's Gebraad 
+
+      
+   xwake = X + (Dwake - D)/(2*k_e*m_e(q3));
+
+
+   
+ %Get the value of Ueff coupled to the length in x-direction
+    for q = 1:3
+        m_u(q)  = M_U(q)/((cosd(a_U+b_U*yawt)));
+
+        c(q)    = ((D/(D+2*k_e*m_u(q)*(xwake-X)))^2);
+
+        Ueff(q) = u_fs*(1-2*ai*c(q));
+        
+    
+    end
+%%  Gaussian shape
+Gaussian_omegay = Dwake/4;
+Gaussian_omegaz = Dwake/4;
+
 wakeGrid = zeros(Ny,Nz); % Calculate wake deficit
 for dyi = 1:Ny
     dy = y_rot(dyi)-yWake;
     for dzi = 1:Nz
         dz = z(dzi)-zWake;
-        wakeGrid(dyi,dzi) = Gaussian_A * exp(-(  ((dy.^2)/(2*Gaussian_omegay^2) + (dz.^2)/(2*Gaussian_omegaz^2))  ));
+        wakeGrid(dyi,dzi) =  ((u_fs-Ueff(q1))* exp(-(  ((dy.^2)/(2*Gaussian_omegay^2) + (dz.^2)/(2*Gaussian_omegaz^2))  )));
         % https://en.wikipedia.org/wiki/Gaussian_function#Two-dimensional_Gaussian_function
     end;
 end;
@@ -44,7 +80,7 @@ if yaw == 0
     [u_out,v_out,w_out] = deal(zeros(Nx,Ny,Nz));
     for i = 1:Nx
         u_out(i,:,:) = u_waked+u_waked*(TI*randn);
-    end;
+    end
     
 else % if yaw angle isn't zero, rotate the windfield
     % calculate u_mean and v_mean
