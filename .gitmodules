@@ -3,4 +3,4 @@
 url=https://github.com/Djosjowa/FLORISSE_M
 [submodule "LUT_generation/FASTv8GUI"]
 	path = LUT_generation/FASTv8GUI
-	url = https://github.com/sebastiaanmuld/FASTv8GUI
+url=https://github.com/Djosjowa/FASTv8GUI.git
