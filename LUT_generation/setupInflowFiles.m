@@ -2,13 +2,13 @@ clear all; close all; clc; tic;
 addpath bin % Add binary files (external functions)
 
 % LUT settings: overwrite default parameters
-inputData.parameters       = {'Dwake','u_fs','yaw','yWake'}; %{'yWake','u_mean'};    % Variable names to cover
-inputData.ranges           = {300,8,0,0}; %{-20:20:20,6:1:8};     % Ranges to cover for LUT.parameters
+inputData.parameters       = {'yWake','yaw','U_fs','Dwake'};   % Variable names to cover
+inputData.ranges           = {-20:20:20,0,[6 8],176.4};                      % Ranges to cover for LUT.parameters
 
 % Set up settings
 inputData.T                 = 200;          % Simulation duration [seconds]
 inputData.dt                = 0.250;        % Timestep for FAST simulations
-inputData.plotProfile       = true;        % Plot the inflow profiles (y,z)
+inputData.plotProfile       = false;        % Plot the inflow profiles (y,z)
 inputData.HH                = 90.0;         % Hub height
 inputData.zWake             = inputData.HH; % Height of wake center
 inputData.yWake             = 0;            % Lateral C2C displacement between rotor and wake
@@ -48,7 +48,9 @@ end
 mkdir(foldername); % Create folder
 
 % Fill up N-D output filenames matrix & generate inflow profiles
+% for i = 1:length(rangeLoop{1})
 [filesMat,~] = nested_generateInflows(inputData.parameters,inputData.ranges,inputData);
+% end
 
 % Save workspace for future use
 save(['inflowProfiles/' inputData.destinationFolder '/workspace.mat']);

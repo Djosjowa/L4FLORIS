@@ -4,14 +4,12 @@ if nargin <= 5 % Set up initial settings
     Nd            = [];
     saveMat       = {};
     saveMatIdx    = {};
-    for j = 1:length(rangeLoop)
-        Nd            = [Nd length(rangeLoop{j})];
-        saveMatIdx{j} = 1;
+    for i = 1:length(rangeLoop)
+        Nd            = [Nd length(rangeLoop{i})];
+        saveMatIdx{i} = 1;
     end
     Ld = 1;
 end
-yWake = inputData.(paramsLoop{1});
-yWake_range = rangeLoop{1}(i);
 %Nested loop for N-dimensional LUT generation
 % Ld = loop depth
 if length(paramsLoop) >= 1
