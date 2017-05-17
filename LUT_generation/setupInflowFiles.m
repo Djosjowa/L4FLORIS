@@ -3,7 +3,7 @@ addpath bin % Add binary files (external functions)
 
 % LUT settings: overwrite default parameters
 inputData.parameters       = {'Dwake','yWake'};   % Variable names to cover
-inputData.ranges           = {176.4,-20:20:20};  % Ranges to cover for LUT.parameters
+inputData.ranges           = {176.4,-20:20:0};  % Ranges to cover for LUT.parameters
 
 % Set up settings
 inputData.T                 = 276;          % Simulation duration [seconds]

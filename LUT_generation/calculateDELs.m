@@ -20,7 +20,7 @@ WS.DELfoldername = '..\LUT_database\DEL_files';
 if exist(WS.DELfoldername) % Delete existing folder
     user_response = input(['Are you sure you want to delete folder ' WS.DELfoldername '? (y/n)  '],'s');
     if lower(user_response(1)) == 'y'
-        rmdir(foldername ,'s');
+        rmdir(WS.DELfoldername ,'s');
     else
         error('Please rename the old folder or change the destination folder name.');
     end
