@@ -24,6 +24,7 @@ if length(paramsLoop) >= 1
             fun_generateInflow(inputData,filename);
             saveMat{saveMatIdx{:}}  = filename; % Save file names corresponding to entries
         end;
+%     [saveMat,saveMatIdx] = nested_generateInflows_loop( i,paramsLoop,rangeLoop,Ld,saveMat,saveMatIdx,inputData);
     end;
 end
 

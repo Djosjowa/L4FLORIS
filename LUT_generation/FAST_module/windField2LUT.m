@@ -1,5 +1,5 @@
-% Set up settings
-mlifeSettings   = 'calculate_DEL_v2.mlif';  % Mlife settings file
+
+
 
 % Load FAST path
 addpath(genpath('../FAST_module'))   %Load Path needed for execution of this code
@@ -20,6 +20,9 @@ end
 
 % Simulate Simulink
 sim('NREL5MW_Baseline_loads_2014b')  % Simulate FAST
+
+% Set up settings
+mlifeSettings   = 'calculate_DEL_v2.mlif';  % Mlife settings file
 
 % Simulate MLife
 [fatigue, statistics] = mlife(mlifeSettings, cd, outputDirectory); 
