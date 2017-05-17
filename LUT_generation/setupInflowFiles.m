@@ -69,7 +69,7 @@ else
     newParameters = [inputData.parameters(longestRangeIdx) , inputData.parameters(1:longestRangeIdx-1) , inputData.parameters(longestRangeIdx+1:end)];
     newRanges = [inputData.ranges(1:longestRangeIdx-1) , inputData.ranges(longestRangeIdx+1:end)];
 end
-for i = 1:length(inputData.ranges{1})
+parfor i = 1:length(inputData.ranges{1})
     nested_generateInflows(newParameters,[longestRange(i) , newRanges],inputData);
 end
 
