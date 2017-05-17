@@ -10,14 +10,14 @@ if nargin <= 5 % Set up initial settings
     for i = 1:length(rangeLoop)
         Nd            = [Nd length(rangeLoop{i})];
         saveMatIdx{i} = 1;
-    end;
+    end
     if length(Nd) == 1
         saveMat = zeros(Nd,1);
     else
         saveMat = zeros(Nd);
-    end;
+    end
     Ld = 1;
-end;
+end
 %Nested loop for N-dimensional LUT generation
 % Ld = loop depth
 if length(paramsLoop) >= 1
@@ -28,12 +28,15 @@ if length(paramsLoop) >= 1
         
         % Save data from DEL simulations
         if length(paramsLoop) == 1  % Save data at lowest level
-            filename = [WS.foldername '\' nested_filenamer( WS.inputData )];
+            paramCombiName = nested_filenamer( WS.inputData );
+            filename = [WS.foldername '\' paramCombiName];
             cd FAST_module          % Go into FAST folder
             run('windField2LUT');   % Call in-folder file for processing
             cd ..                   % Return to initial working directory
+            dlmwrite([WS.DELfoldername '\' paramCombiName '.txt'],DEL);
             saveMat(saveMatIdx{:})  = DEL; % Save file names corresponding to entries
-        end;
-    end;
+            
+        end
+    end
 end
 

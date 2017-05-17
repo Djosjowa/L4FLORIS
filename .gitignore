@@ -14,3 +14,4 @@ octave-workspace
 *.sum
 *.wnd
 workspace.mat
+LUT_database/DEL_files/

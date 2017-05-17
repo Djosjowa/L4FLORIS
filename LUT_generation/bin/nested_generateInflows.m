@@ -7,9 +7,9 @@ if nargin <= 5 % Set up initial settings
     for i = 1:length(rangeLoop)
         Nd            = [Nd length(rangeLoop{i})];
         saveMatIdx{i} = 1;
-    end;
+    end
     Ld = 1;
-end;
+end
 %Nested loop for N-dimensional LUT generation
 % Ld = loop depth
 if length(paramsLoop) >= 1
@@ -23,8 +23,8 @@ if length(paramsLoop) >= 1
             filename = ['inflowProfiles\' inputData.destinationFolder '\' nested_filenamer( inputData )];
             fun_generateInflow(inputData,filename);
             saveMat{saveMatIdx{:}}  = filename; % Save file names corresponding to entries
-        end;
+        end
 %     [saveMat,saveMatIdx] = nested_generateInflows_loop( i,paramsLoop,rangeLoop,Ld,saveMat,saveMatIdx,inputData);
-    end;
+    end
 end
 
