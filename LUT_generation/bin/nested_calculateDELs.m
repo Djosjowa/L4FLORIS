@@ -28,11 +28,14 @@ if length(paramsLoop) >= 1
         
         % Save data from DEL simulations
         if length(paramsLoop) == 1  % Save data at lowest level
-            filename = [WS.foldername '\' nested_filenamer( WS.inputData )];
+            paramCombiName = nested_filenamer( WS.inputData );
+            filename = [WS.foldername '\' paramCombiName];
             cd FAST_module          % Go into FAST folder
             run('windField2LUT');   % Call in-folder file for processing
             cd ..                   % Return to initial working directory
+            dlmwrite([WS.DELfoldername '\' paramCombiName '.txt'],DEL);
             saveMat(saveMatIdx{:})  = DEL; % Save file names corresponding to entries
+            
         end
     end
 end

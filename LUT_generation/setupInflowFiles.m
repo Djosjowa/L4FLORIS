@@ -2,8 +2,8 @@ clear all; close all; clc; tic;
 addpath bin % Add binary files (external functions)
 
 % LUT settings: overwrite default parameters
-inputData.parameters       = {'yWake','Dwake','yaw','U_fs'};   % Variable names to cover
-inputData.ranges           = {-20:5:20,200:100:300,-20:2:20,[6 8]};  % Ranges to cover for LUT.parameters
+inputData.parameters       = {'Dwake','yWake'};   % Variable names to cover
+inputData.ranges           = {176.4,-20:20:20};  % Ranges to cover for LUT.parameters
 
 % Set up settings
 inputData.T                 = 200;          % Simulation duration [seconds]
@@ -69,7 +69,7 @@ else
     newParameters = [inputData.parameters(longestRangeIdx) , inputData.parameters(1:longestRangeIdx-1) , inputData.parameters(longestRangeIdx+1:end)];
     newRanges = [inputData.ranges(1:longestRangeIdx-1) , inputData.ranges(longestRangeIdx+1:end)];
 end
-parfor i = 1:length(inputData.ranges{1})
+parfor i = 1:length(longestRange)
     nested_generateInflows(newParameters,[longestRange(i) , newRanges],inputData);
 end
 
