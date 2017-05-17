@@ -2,8 +2,8 @@ clear all; close all; clc; tic;
 addpath bin % Add binary files (external functions)
 
 % LUT settings: overwrite default parameters
-inputData.parameters       = {'yWake','yaw','U_fs','Dwake'};   % Variable names to cover
-inputData.ranges           = {-20:20:20,0,[6 8],176.4};                      % Ranges to cover for LUT.parameters
+inputData.parameters       = {'yWake','Dwake','yaw','U_fs'};   % Variable names to cover
+inputData.ranges           = {-20:5:20,200:100:300,-20:2:20,[6 8]};  % Ranges to cover for LUT.parameters
 
 % Set up settings
 inputData.T                 = 200;          % Simulation duration [seconds]
@@ -48,9 +48,30 @@ end
 mkdir(foldername); % Create folder
 
 % Fill up N-D output filenames matrix & generate inflow profiles
-% for i = 1:length(rangeLoop{1})
-[filesMat,~] = nested_generateInflows(inputData.parameters,inputData.ranges,inputData);
-% end
+maxLength = 0;
+% find the longest parameter vector
+for i = 1:length(inputData.ranges)
+    if length(inputData.ranges{i}) > maxLength
+        longestRangeIdx = i;
+        maxLength = inputData.ranges{i}; 
+    end
+end
+longestRange = inputData.ranges{longestRangeIdx};
+% make newParameters and newRanges with the longest parameter vector put in
+% first
+if longestRangeIdx == 1
+    newParameters = inputData.parameters;
+    newRanges = inputData.ranges(2:end);
+elseif longestRangeIdx == length(inputData.ranges)
+    newParameters = [inputData.parameters(end) , inputData.parameters(1:end-1)];
+    newRanges = inputData.ranges(1:end-1);
+else
+    newParameters = [inputData.parameters(longestRangeIdx) , inputData.parameters(1:longestRangeIdx-1) , inputData.parameters(longestRangeIdx+1:end)];
+    newRanges = [inputData.ranges(1:longestRangeIdx-1) , inputData.ranges(longestRangeIdx+1:end)];
+end
+for i = 1:length(inputData.ranges{1})
+    nested_generateInflows(newParameters,[longestRange(i) , newRanges],inputData);
+end
 
 % Save workspace for future use
 save(['inflowProfiles/' inputData.destinationFolder '/workspace.mat']);

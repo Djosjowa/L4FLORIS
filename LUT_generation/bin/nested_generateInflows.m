@@ -22,8 +22,9 @@ if length(paramsLoop) >= 1
         if length(paramsLoop) == 1  % Save data at lowest level
             filename = ['inflowProfiles\' inputData.destinationFolder '\' nested_filenamer( inputData )];
             fun_generateInflow(inputData,filename);
-            saveMat{1}  = filename; % Save file names corresponding to entries
+            saveMat{saveMatIdx{:}}  = filename; % Save file names corresponding to entries
         end
+%     [saveMat,saveMatIdx] = nested_generateInflows_loop( i,paramsLoop,rangeLoop,Ld,saveMat,saveMatIdx,inputData);
     end
 end
 
