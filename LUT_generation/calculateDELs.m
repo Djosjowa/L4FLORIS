@@ -16,7 +16,7 @@ dt          = WS.inputData.dt; % sampling time in seconds
 load('FAST_module\Controller_parameters');   % Load FAST settings
 
 % Prepare folder for saving single DEL values
-WS.DELfoldername = '..\LUT_database\DEL_files';
+WS.DELfoldername = ['..\LUT_database\DEL_files\' inflowSetName] ;
 if exist(WS.DELfoldername) % Delete existing folder
     user_response = input(['Are you sure you want to delete folder ' WS.DELfoldername '? (y/n)  '],'s');
     if lower(user_response(1)) == 'y'
@@ -25,6 +25,9 @@ if exist(WS.DELfoldername) % Delete existing folder
         error('Please rename the old folder or change the destination folder name.');
     end
 end
+% if exist(WS.DELfoldername)
+%     rmdir(WS.DELfoldername ,'s');
+% end
 mkdir(WS.DELfoldername); % Create folder
 
 % Evaluate DELs
