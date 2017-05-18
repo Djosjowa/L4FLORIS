@@ -4,7 +4,7 @@ startTime = tic;
 addpath bin
 
 % Setup inflow settings
-inflowSetName          = 'C2C_only';
+inflowSetName          = '4_parameters';
 inputData.sourceFolder = ['inflowProfiles\' inflowSetName];
 
 % Specify correct settings and load workspace
@@ -16,9 +16,9 @@ dt          = WS.inputData.dt; % sampling time in seconds
 load('FAST_module\Controller_parameters');   % Load FAST settings
 
 % Prepare folder for saving single DEL values
-WS.DELfoldername = ['..\LUT_database\DEL_files\' inflowSetName] ;
+WS.DELfoldername = [cd '\DEL_files\' inflowSetName] ;
 if exist(WS.DELfoldername) % Delete existing folder
-    user_response = input(['Are you sure you want to delete folder ' WS.DELfoldername '? (y/n)  '],'s');
+    user_response = input(['Are you sure you want to delete folder ' inflowSetName '? (y/n)  '],'s');
     if lower(user_response(1)) == 'y'
         rmdir(WS.DELfoldername ,'s');
     else
@@ -29,9 +29,14 @@ end
 %     rmdir(WS.DELfoldername ,'s');
 % end
 mkdir(WS.DELfoldername); % Create folder
+% Save parameters and ranges
+parameters = WS.inputData.parameters;
+ranges = WS.inputData.ranges;
+save([WS.DELfoldername '\parameters.mat'],'parameters','ranges')
 
 % Evaluate DELs
 [matDELs,~] = nested_calculateDELs(WS);
+
 % Setup for evaluating DELs on multiple cores
 % longestRange = WS.longestRange;
 % newParameters = WS.newParameters;

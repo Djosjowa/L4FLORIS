@@ -15,3 +15,4 @@ octave-workspace
 *.wnd
 workspace.mat
 LUT_database/DEL_files/
+LUT_generation/DEL_files/
