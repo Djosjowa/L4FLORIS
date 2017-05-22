@@ -3,7 +3,7 @@ addpath bin % Add binary files (external functions)
 
 % LUT settings: overwrite default parameters
 inputData.parameters       = {'Dwake','U_fs','yaw','yWake'};   % Variable names to cover
-inputData.ranges           = {180:25:330,[6 8],0,-250:10:250};  % Ranges to cover for LUT.parameters
+inputData.ranges           = {205:25:230,[6 8],0,-250:10:250};  % Ranges to cover for LUT.parameters
 
 % Set up settings
 inputData.T                 = 276;          % Simulation duration [seconds]
@@ -13,7 +13,7 @@ inputData.HH                = 90.0;         % Hub height
 inputData.zWake             = inputData.HH; % Height of wake center
 inputData.yWake             = 0;            % Lateral C2C displacement between rotor and wake
 inputData.yaw               = 0;            % yaw angle of turbine [degrees]
-inputData.destinationFolder = '4_parameters';   % Destination folder name
+inputData.destinationFolder = 'test2';   % Destination folder name
 inputData.doWindShear       = true;         % Take wind shear into account
 inputData.shear_const       = 0.1;          % Constant for shear effect on smooth surfaces(oceans, sand, etc.)
 

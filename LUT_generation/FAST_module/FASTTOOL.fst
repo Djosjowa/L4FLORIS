@@ -11,7 +11,7 @@ False       Echo        - Echo input data to "echo.out" (flag)
    0.0125   DT          - Integration time step (s)
 ---------------------- TURBINE CONTROL -----------------------------------------
    0        YCMode      - Yaw control mode {0: none, 1: user-defined from routine UserYawCont, 2: user-defined from Simulink/Labview} (switch)
-9999.9      TYCOn       - Time to enable active yaw control (s) [unused when YCMode=0]
+   0.0      TYCOn       - Time to enable active yaw control (s) [unused when YCMode=0]
    2        PCMode      - Pitch control mode {0: none, 1: user-defined from routine PitchCntrl, 2: user-defined from Simulink/Labview} (switch)
    0.0      TPCOn       - Time to enable active pitch control (s) [unused when PCMode=0]
    3        VSContrl    - Variable-speed control mode {0: none, 1: simple VS, 2: user-defined from routine UserVSCont, 3: user-defined from Simulink/Labview} (switch)
@@ -58,7 +58,7 @@ True        EdgeDOF     - First edgewise blade mode DOF (flag)
 False       TeetDOF     - Rotor-teeter DOF (flag) [unused for 3 blades]
 True        DrTrDOF     - Drivetrain rotational-flexibility DOF (flag)
 True        GenDOF      - Generator DOF (flag)
-True        YawDOF      - Yaw DOF (flag)
+False	    YawDOF      - Yaw DOF (flag)
 True        TwFADOF1    - First fore-aft tower bending-mode DOF (flag)
 True        TwFADOF2    - Second fore-aft tower bending-mode DOF (flag)
 True        TwSSDOF1    - First side-to-side tower bending-mode DOF (flag)
@@ -71,7 +71,7 @@ False       CompNoise   - Compute aerodynamic noise (flag)
    0.0      TeetDefl    - Initial or fixed teeter angle (degrees) [unused for 3 blades]
    0.0      Azimuth     - Initial azimuth angle for blade 1 (degrees)
    5.0      RotSpeed    - Initial or fixed rotor speed (rpm)
-   0.0      NacYaw      - Initial or fixed nacelle-yaw angle (degrees)
+ -30.0      NacYaw      - Initial or fixed nacelle-yaw angle (degrees)
    0.0      TTDspFA     - Initial fore-aft tower-top displacement (meters)
    0.0      TTDspSS     - Initial side-to-side tower-top displacement (meters)
 ---------------------- TURBINE CONFIGURATION -----------------------------------

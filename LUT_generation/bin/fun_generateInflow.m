@@ -33,12 +33,10 @@ yawt = 0;                   % Yaw upstream turbine          [deg]
 
 %% Static settings: vertical grid
 y     = inputData.y;   % lateral dimension (NOTE: MUST BE POSITIVE TO NEGATIVE).
-y_rot = y.*cosd(-yaw); % used instead of y, when there is a yaw angle. Compensates for resolution loss when rotating windfield
 z     = inputData.z;   % vertical dimension
 Ny    = length(y);     % Number of grid points y-
 Nz    = length(z);     % Number of grid points z-
 [Y,Z] = ndgrid(y,z);   % 2D grid points
-
 time      = [dt:dt:T];     % Time vector [s]
 x         = U_fs*time;     % longitudinal dimension [m]
 Nx        = length(x);     % Number of grid points x-
@@ -61,7 +59,7 @@ Gaussian_omegaz = Dwake/4;
 
 wakeGrid = zeros(Ny,Nz); % Calculate wake deficit
 for dyi = 1:Ny
-    dy = y_rot(dyi)-yWake;
+    dy = y(dyi)-yWake;
     for dzi = 1:Nz
         dz = z(dzi)-zWake;
         wakeGrid(dyi,dzi) =  ((U_fs-Ueff(q1))* exp(-(  ((dy.^2)/(2*Gaussian_omegay^2) + (dz.^2)/(2*Gaussian_omegaz^2))  )));
@@ -86,33 +84,15 @@ if(doWindShear)
     end
 end
 
-% generate u_out, v_out, w_out and apply yaw to windfield if needed
-if yaw == 0
-    u_fs = U_fs; v_fs = 0;
-    % Copy and add turbulence to the slices
-    TI = 0.0; % Currently 0. We have to think about time sampling and TI...
-    [u_out,v_out,w_out] = deal(zeros(Nx,Ny,Nz));
-    for i = 1:Nx
-        u_out(i,:,:) = u_waked+u_waked*(TI*randn);
-    end
-    
-else % if yaw angle isn't zero, rotate the windfield
-    % calculate u_mean and v_mean
-    u_fs = U_fs*cosd(-yaw);
-    v_fs = U_fs*sind(-yaw);
-    
-    % Rotate u_waked
-    rotu_waked = u_waked.*cosd(-yaw);
-    rotv_waked = u_waked.*sind(-yaw);
-    
-    % Copy  the slices
-    % Turbulence is ignored here for now, can be added later
-    [u_out,v_out,w_out] = deal(zeros(Nx,Ny,Nz));
-    for i = 1:Nx
-        u_out(i,:,:) = rotu_waked;
-        v_out(i,:,:) = rotv_waked;
-    end
+% generate u_out, v_out, w_out
+u_fs = U_fs;
+% Copy and add turbulence to the slices
+TI = 0.0; % Currently 0. We have to think about time sampling and TI...
+[u_out,v_out,w_out] = deal(zeros(Nx,Ny,Nz));
+for i = 1:Nx
+    u_out(i,:,:) = u_waked+u_waked*(TI*randn);
 end
+
 
 % Plotting wake profile
 if plotProfile
@@ -137,11 +117,7 @@ end
 % Save to external files for FAST usage (.wnd)
 % --- filename needs to be extended according to added dimensions to LUT ---
 %filename = ['inflowProfiles/' destinationFolder '/' inflowFilename(inputData)];
-if(yaw==0)
-    writebladed(filename,(u_out-u_fs)/u_fs,v_out,w_out,x,y,z,U_fs);
-else
-    writebladed(filename,(u_out-u_fs)/u_fs,(v_out-v_fs)/v_fs,w_out,x,y,z,U_fs);
-end
+writebladed(filename,(u_out-u_fs)/u_fs,v_out,w_out,x,y,z,U_fs);
 fid = fopen([filename, '.sum'], 'wt'); % Write .sum file
 fprintf(fid, 'T\tCLOCKWISE\n');
 fprintf(fid, '%0.0f\tHUB HEIGHT\n\n', HH);
