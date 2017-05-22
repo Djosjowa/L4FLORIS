@@ -1,16 +1,17 @@
 clear;
 addpath bin
 fillinExistingLUT = true;   % set this to true if you want to extend an existing lut, set it false if you want to make a new one
-existingLUT = '..\LUT_database\incompleteLUT.mat';
+existingLUT = '..\LUT_database\LUT.mat';
 
 %% Load parameters
-inputData.DELSetName = 'C2C_only';   % name of the DEL set that is used
+inputData.DELSetName = 'yaw-30';   % name of the DEL set that is used
 if fillinExistingLUT
     load(existingLUT);
     inputData.parameters = LUT.parameters;
     for i = 1:length(LUT.parameters)
         inputData.ranges{i} = LUT.(LUT.parameters{i});
     end
+    inputData.table = LUT.table;
 else
     load([cd '\DEL_files\' inputData.DELSetName '\parameters.mat']);   % parameters and ranges are loaded in
     inputData.parameters = parameters;
@@ -28,6 +29,16 @@ if ~fillinExistingLUT
 end
 
 %% Save LUT
+disp(['LUT building complete ' num2str(DELsAdded) ' DEL values were added']);
 
-save(['..\LUT_database\' inputData.DELSetName '.mat'],'LUT');
-disp(['LUT building complete ' DELsAdded ' DEL values were added']);
+% Check if user want to save this new LUT
+user_response = input(['Are you sure you want to save this LUT (y/n)  '],'s');
+if lower(user_response(1)) == 'y'
+    if fillinExistingLUT
+        save(existingLUT,'LUT');
+    else
+        save(['..\LUT_database\' inputData.DELSetName '.mat'],'LUT');
+    end
+else
+    disp('LUT not saved');
+end
