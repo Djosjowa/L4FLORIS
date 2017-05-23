@@ -1,10 +1,10 @@
 clear;
 addpath bin
 fillinExistingLUT = true;   % set this to true if you want to extend an existing lut, set it false if you want to make a new one
-existingLUT = '..\LUT_database\LUT.mat';
 
 %% Load parameters
-inputData.DELSetName = 'yaw-30';   % name of the DEL set that is used
+existingLUT = '..\LUT_database\LUT.mat';    % path of existing LUT that will be extended if fillinExistingLUT is true
+inputData.DELSetName = 'Dwake255yaw-30';   % name of the DEL set that is used
 if fillinExistingLUT
     load(existingLUT);
     inputData.parameters = LUT.parameters;
