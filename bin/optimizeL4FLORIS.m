@@ -7,7 +7,7 @@ amax       = optimStruct.maxA;
 yawmin     = optimStruct.minYaw;
 yawmax     = optimStruct.maxYaw;
 N          = size(siteStruct.LocIF,1); % Number of turbines
-DELbaseline = mean(mean(mean(LUT.table))); % DEL values are scaled with this value in the cost function
+DELbaseline = mean(mean(mean(mean(LUT.table)))); % DEL values are scaled with this value in the cost function
 Pref_plot  = zeros(iterations,1)';
 
 % Calculate windspeed distribution in wind-aligned frame
@@ -67,12 +67,8 @@ for k = 1:iterations  % k is the number of iterations
             LUTparam(turbi) = create_LUTparam(turbi,turbines,wakes,LUTparam(turbi));
             P(turbi) = turbines(turbi).power;
             % -- Look up DEL values for flow field with C2C, Dw, Ueff
-            DEL(turbi)= interpn(LUT.Dwake,LUT.U_fs,LUT.yWake,...
-                                LUT.table,LUTparam(turbi).Dwake,LUTparam(turbi).U_fs,LUTparam(turbi).yWake); 
-            if isnan(DEL(turbi)) == 1   % This is a quick fix because values sometimes fall outside the LUT range
-                DEL(turbi) = 0; 
-            end
-            % DEL(turbi) = 1; % Placeholder
+            DEL(turbi)= interpn(LUT.Dwake,LUT.U_fs,LUT.yaw,LUT.yWake,...
+                                LUT.table,LUTparam(turbi).Dwake,LUTparam(turbi).U_fs,LUTparam(turbi).yaw,LUTparam(turbi).yWake); 
         end
         
         Ptot   = sum(P);
