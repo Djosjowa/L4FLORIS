@@ -4,7 +4,7 @@ startTime = tic;
 addpath bin
 
 % Setup inflow settings
-inflowSetName          = '4_parameters';
+inflowSetName          = 'Dwake255yaw-30';
 inputData.sourceFolder = ['inflowProfiles\' inflowSetName];
 
 % Specify correct settings and load workspace
