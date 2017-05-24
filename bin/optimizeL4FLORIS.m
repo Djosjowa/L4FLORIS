@@ -1,4 +1,4 @@
-function[a_opt,yaw_opt,J_Pws_opt,J_DEL_opt,J_sum_opt] = optimizeL4FLORIS(modelStruct,turbType,siteStruct,optimStruct,DEL_table,Pref, Pbandwidth,plotResults)
+function[a_opt,yaw_opt,J_Pws_opt,J_DEL_opt,J_sum_opt] = optimizeL4FLORIS(modelStruct,turbType,siteStruct,optimStruct,LUT,Pref, Pbandwidth,plotResults)
 % Optimization parameters
 optConst   = optimStruct.optConst;
 iterations = optimStruct.iterations;
@@ -7,7 +7,7 @@ amax       = optimStruct.maxA;
 yawmin     = optimStruct.minYaw;
 yawmax     = optimStruct.maxYaw;
 N          = size(siteStruct.LocIF,1); % Number of turbines
-DELbaseline = mean(mean(mean(DEL_table.table))); % DEL values are scaled with this value in the cost function
+DELbaseline = mean(mean(mean(LUT.table))); % DEL values are scaled with this value in the cost function
 Pref_plot  = zeros(iterations,1)';
 
 % Calculate windspeed distribution in wind-aligned frame
@@ -61,14 +61,14 @@ for k = 1:iterations  % k is the number of iterations
         [turbines, wakes, wtRows] = run_floris(input,modelStruct,turbType,siteStruct);
         
         [P,DEL]  = deal(zeros(1,N));
-        LUTparam = struct('C2C',[],'Dw',[],'yaw',num2cell(zeros(1,N)),'Ueff',[]);
+        LUTparam = struct('Dwake',[],'U_fs',[],'yaw',num2cell(zeros(1,N)),'yWake',[]);
         
         for turbi = 1:N
             LUTparam(turbi) = create_LUTparam(turbi,turbines,wakes,LUTparam(turbi));
             P(turbi) = turbines(turbi).power;
             % -- Look up DEL values for flow field with C2C, Dw, Ueff
-            DEL(turbi)= interpn(DEL_table.C2C,DEL_table.Dw,DEL_table.Ueff,...
-                                DEL_table.table,LUTparam(turbi).C2C,LUTparam(turbi).Dw,LUTparam(turbi).Ueff); 
+            DEL(turbi)= interpn(LUT.Dwake,LUT.U_fs,LUT.yWake,...
+                                LUT.table,LUTparam(turbi).Dwake,LUTparam(turbi).U_fs,LUTparam(turbi).yWake); 
             if isnan(DEL(turbi)) == 1   % This is a quick fix because values sometimes fall outside the LUT range
                 DEL(turbi) = 0; 
             end
@@ -85,9 +85,9 @@ for k = 1:iterations  % k is the number of iterations
     % Calculate collective results over entire wind rose
     sum_Ptot    = Ptot_inflows   * weightsInflowUncertainty;  % Inflow uncertainty-weighed generated power
     sum_DELtot  = DELtot_inflows * weightsInflowUncertainty;  % Inflow uncertainty-weighed turbine DEL values
-    sum_PDELtot = 1-optConst*((Pref-sum_Ptot)/Pbandwidth)^2 - (1-optConst)*sum_DELtot/DELbaseline; % Generate combined power and loads cost function
+    sum_PDELtot = optConst*((Pref-sum_Ptot)/Pbandwidth)^2 + (1-optConst)*sum_DELtot/DELbaseline; % Generate combined power and loads cost function
     
-    if (sum_PDELtot >= J_sum_opt | k == 1)
+    if (sum_PDELtot < J_sum_opt | k == 1)
         a_opt(k,:)       = a;
         yaw_opt(k,:)     = yaw;
         J_Pws_opt(k)     = sum_Ptot;

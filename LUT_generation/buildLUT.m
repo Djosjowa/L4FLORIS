@@ -1,10 +1,10 @@
 clear;
 addpath bin
 fillinExistingLUT = true;   % set this to true if you want to extend an existing lut, set it false if you want to make a new one
-existingLUT = '..\LUT_database\incompleteLUT.mat';
+existingLUT = '..\LUT_database\LUT.mat';
 
 %% Load parameters
-inputData.DELSetName = 'C2C_only';   % name of the DEL set that is used
+inputData.DELSetName = 'dw180yaw0';   % name of the DEL set that is used
 if fillinExistingLUT
     load(existingLUT);
     inputData.parameters = LUT.parameters;
