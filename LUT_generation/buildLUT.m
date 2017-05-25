@@ -1,10 +1,12 @@
-clear;
+clear; clc;
 addpath bin
-fillinExistingLUT = true;   % set this to true if you want to extend an existing lut, set it false if you want to make a new one
+fillinExistingLUT = true;   % set this to true if you want to extend an existing LUT, set it false if you want to make a new one
+doOverwrite = true;        % do you want to overwrite existing DEL values in the LUT?
 
 %% Load parameters
-existingLUT = '..\LUT_database\LUT.mat';    % path of existing LUT that will be extended if fillinExistingLUT is true
-inputData.DELSetName = 'Dwake255yaw-30';   % name of the DEL set that is used
+existingLUT = '..\LUT_database\4D_LUT_complete.mat';    % path of existing LUT that will be extended if fillinExistingLUT is true
+inputData.DELSetName = '4_parameters';   % name of the DEL set that is used
+inputData.doOverwrite = doOverwrite;
 if fillinExistingLUT
     load(existingLUT);
     inputData.parameters = LUT.parameters;
@@ -19,7 +21,7 @@ else
 end
 
 %% Build the LUT
-[LUT.table,~,DELsAdded] = nested_buildLUT(inputData);
+[LUT.table,~,counter] = nested_buildLUT(inputData);
 % If the LUT doesn't exist yet, generate the parameter and range fields
 if ~fillinExistingLUT
     LUT.parameters = parameters;
@@ -29,7 +31,7 @@ if ~fillinExistingLUT
 end
 
 %% Save LUT
-disp(['LUT building complete ' num2str(DELsAdded) ' DEL values were added']);
+disp(['LUT building complete ' num2str(counter.DELsAdded) ' DEL values were added, and ' num2str(counter.DELsOverwritten) ' were overwritten']);
 
 % Check if user want to save this new LUT
 user_response = input(['Are you sure you want to save this LUT (y/n)  '],'s');
