@@ -37,7 +37,7 @@ if length(paramsLoop) >= 1
                 if saveMat(saveMatIdx{:}) == 0
                     saveMat(saveMatIdx{:})  = DEL; % Save file names corresponding to entries
                     counter.DELsAdded = counter.DELsAdded+1;
-                elseif inputData.doOverwrite
+                elseif inputData.doOverwrite && saveMat(saveMatIdx{:}) ~= DEL
                     saveMat(saveMatIdx{:})  = DEL; % Save file names corresponding to entries
                     counter.DELsOverwritten = counter.DELsOverwritten+1;
                 end
