@@ -11,7 +11,8 @@ DEL_table = load('./LUT_database/LUT_Ben.mat'); % Load LUT of choice
 
 % Load model, turbine and topology settings
 modelStruct = floris_param_model('default');    % Load default FLORIS model settings
-modelStruct.axialIndProvided = true;
+modelStruct.axialIndProvided = true;            % Value set to true so FLORIS uses user defined axial induction factors
+
 turbType    = floris_param_turbine('nrel5mw');  % Load NREL 5MW turbine properties
 
 siteStruct.LocIF =   [300,    100.0,  turbType.hub_height % 9 turbine scenario
@@ -31,13 +32,14 @@ siteStruct.rho      = 1.1716;   % Atmospheric air density (kg/m3)
 
 % Setup optimization settings
 optimStruct.optConst        = 0.5;                          % Weighting factor. Power only = 1, Loads only = 0.
-optimStruct.iterations      = 1000;                          % Optimization iterations  [-]
-optimStruct.maxYaw          = +30;                          % Largest  yaw angle [radians]
+optimStruct.iterations      = 5;                            % Optimization iterations  [-]
 optimStruct.minYaw          = -30;                          % Smallest yaw angle [radians]
-optimStruct.axInd           = 0.25;                         % Axial induction factors
+optimStruct.maxYaw          = +30;                          % Largest  yaw angle [radians]
+optimStruct.initYaw         = 0;                            % Yaw angle used for first iteration [radians]
+optimStruct.minA            = 0;                            % Smallest axial induction factor
+optimStruct.maxA            = 0.31;                         % Largest axial induction factor
+optimStruct.initA           = 0.33;                          % Axial induction factor used for first iteration
 optimStruct.windUncertainty = [-12:4:12];                   % Additional wind disturbance range (symmetric)
-optimStruct.minA            = 0;
-optimStruct.maxA            = 0.31;
 
 Pref = 10*10^6;     % Reference power [W]
 Pbandwidth = 0.05*10^6;
