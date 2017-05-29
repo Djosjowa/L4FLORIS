@@ -1,4 +1,4 @@
-clear all; close all; clc;
+clear; close all; clc;
 addpath('bin');                      % add binary files
 addpath('bin\FLORISSE_M');           % add FLORIS model files
 addpath('bin\FLORISSE_M\functions'); % add FLORIS model functions
@@ -7,7 +7,7 @@ addpath('bin\FLORISSE_M\functions'); % add FLORIS model functions
 plotResults = true;
 
 % Import DEL look-up table
-DEL_table = load('./LUT_database/LUT_Ben.mat'); % Load LUT of choice
+load('./LUT_database/4D_LUT_complete_cleaned.mat'); % Load LUT of choice
 
 % Load model, turbine and topology settings
 modelStruct = floris_param_model('default');    % Load default FLORIS model settings
@@ -41,8 +41,9 @@ optimStruct.maxA            = 0.31;                         % Largest axial indu
 optimStruct.initA           = 0.33;                          % Axial induction factor used for first iteration
 optimStruct.windUncertainty = [-12:4:12];                   % Additional wind disturbance range (symmetric)
 
-Pref = 10*10^6;     % Reference power [W]
+
+Pref = 8*10^6;     % Reference power [W]
 Pbandwidth = 0.05*10^6;
 
 % Run optimization
-[a_opt,yaw_opt,J_Pws_opt,J_DEL_opt,J_sum_opt] = optimizeL4FLORIS(modelStruct,turbType,siteStruct,optimStruct,DEL_table,Pref, Pbandwidth,plotResults);
+[a_opt,yaw_opt,J_Pws_opt,J_DEL_opt,J_sum_opt] = optimizeL4FLORIS(modelStruct,turbType,siteStruct,optimStruct,LUT,Pref, Pbandwidth,plotResults);
