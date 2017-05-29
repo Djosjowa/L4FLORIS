@@ -1,4 +1,4 @@
-clear all; close all; clc;
+clear; close all; clc;
 addpath('bin');                      % add binary files
 addpath('bin\FLORISSE_M');           % add FLORIS model files
 addpath('bin\FLORISSE_M\functions'); % add FLORIS model functions
@@ -7,7 +7,7 @@ addpath('bin\FLORISSE_M\functions'); % add FLORIS model functions
 plotResults = true;
 
 % Import DEL look-up table
-load('./LUT_database/4D_LUT_3yaws.mat'); % Load LUT of choice
+load('./LUT_database/4D_LUT_complete_cleaned.mat'); % Load LUT of choice
 
 % Load model, turbine and topology settings
 modelStruct = floris_param_model('default');    % Load default FLORIS model settings
@@ -40,7 +40,7 @@ optimStruct.minA            = 0;
 optimStruct.maxA            = 0.31;
 
 
-Pref = 12.5*10^6;     % Reference power [W]
+Pref = 8*10^6;     % Reference power [W]
 Pbandwidth = 0.05*10^6;
 
 % Run optimization

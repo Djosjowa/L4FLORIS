@@ -119,6 +119,8 @@ disp([datestr(rem(now,1)) ': Elapsed time is ' num2str(toc) ' seconds.']);
 %% Plotting results
 if plotResults
     disp([datestr(rem(now,1)) ': Plotting results...'])
+        disp(a_opt(k,:));
+        disp(yaw_opt(k,:));
     
     figure 
     % Cost function
