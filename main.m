@@ -32,15 +32,15 @@ siteStruct.rho      = 1.1716;   % Atmospheric air density (kg/m3)
 
 % Setup optimization settings
 optimStruct.optConst        = 0.5;                          % Weighting factor. Power only = 1, Loads only = 0.
-optimStruct.iterations      = 100;                            % Optimization iterations  [-]
+optimStruct.iterations      = 300000;                            % Optimization iterations  [-]
 optimStruct.minYaw          = -30;                          % Smallest yaw angle [radians]
 optimStruct.maxYaw          = +30;                          % Largest  yaw angle [radians]
 optimStruct.initYaw         = 0;                            % Yaw angle used for first iteration [radians]
 optimStruct.minA            = 0;                            % Smallest axial induction factor
 optimStruct.maxA            = 1/3;                         % Largest axial induction factor
-optimStruct.initA           = 0.08;                          % Axial induction factor used for first iteration
+optimStruct.initA           = 0.115;                          % Axial induction factor used for first iteration
 optimStruct.windUncertainty = [-12:4:12];                   % Additional wind disturbance range (symmetric)
-optimStruct.Pref            = 8*10^6;     % Reference power [W]
+optimStruct.Pref            = 10*10^6;     % Reference power [W]
 optimStruct.Pbandwidth      = 0.05*10^6;
 
 % Run optimization
