@@ -32,7 +32,7 @@ siteStruct.rho      = 1.1716;   % Atmospheric air density (kg/m3)
 
 % Setup optimization settings
 optimStruct.optConst        = 0.5;                          % Weighting factor. Power only = 1, Loads only = 0.
-optimStruct.iterations      = 1000;                            % Optimization iterations  [-]
+optimStruct.iterations      = 100;                            % Optimization iterations  [-]
 optimStruct.minYaw          = -30;                          % Smallest yaw angle [radians]
 optimStruct.maxYaw          = +30;                          % Largest  yaw angle [radians]
 optimStruct.initYaw         = 0;                            % Yaw angle used for first iteration [radians]
@@ -40,10 +40,15 @@ optimStruct.minA            = 0;                            % Smallest axial ind
 optimStruct.maxA            = 1/3;                         % Largest axial induction factor
 optimStruct.initA           = 0.08;                          % Axial induction factor used for first iteration
 optimStruct.windUncertainty = [-12:4:12];                   % Additional wind disturbance range (symmetric)
-
-
-Pref = 8*10^6;     % Reference power [W]
-Pbandwidth = 0.05*10^6;
+optimStruct.Pref            = 8*10^6;     % Reference power [W]
+optimStruct.Pbandwidth      = 0.05*10^6;
 
 % Run optimization
-[a_opt,yaw_opt,J_Pws_opt,J_DEL_opt,J_sum_opt] = optimizeL4FLORIS(modelStruct,turbType,siteStruct,optimStruct,LUT,Pref,Pbandwidth,plotResults);
+[a_opt,a_tries,yaw_opt,yaw_tries,J_Pws_opt,J_DEL_opt,J_sum_opt] = optimizeL4FLORIS(modelStruct,turbType,siteStruct,optimStruct,LUT,plotResults);
+
+for i = 1:optimStruct.iterations-1
+    a_diff(i,:) = a_tries(i+1,:)-a_tries(i,:);
+    yaw_diff(i,:) = yaw_tries(i+1,:)-yaw_tries(i,:);
+end
+avgstepA = mean(abs(a_diff(a_diff~=0)))    
+avgstepYaw = mean(abs(yaw_diff(yaw_diff~=0))) 

@@ -1,51 +1,48 @@
-function[a_opt,yaw_opt,J_Pws_opt,J_DEL_opt,J_sum_opt] = optimizeL4FLORIS(modelStruct,turbType,siteStruct,optimStruct,LUT,Pref,Pbandwidth,plotResults)
+function[a_opt,a_tries,yaw_opt,yaw_tries,J_Pws_opt,J_DEL_opt,J_sum_opt] = optimizeL4FLORIS(modelStruct,turbType,siteStruct,optS,LUT,plotResults)
 % Optimization parameters
-optConst    = optimStruct.optConst;
-iterations  = optimStruct.iterations;
-yawmin      = optimStruct.minYaw;
-yawmax      = optimStruct.maxYaw;
-yawinit     = optimStruct.initYaw;
-amin        = optimStruct.minA;
-amax        = optimStruct.maxA;
-ainit       = optimStruct.initA;
-N           = size(siteStruct.LocIF,1); % Number of turbines
+N = size(siteStruct.LocIF,1); % Number of turbines
+it = optS.iterations; % Number of iterations
+Pref_plot = zeros(it,1)';
 DELbaseline = mean(mean(mean(mean(LUT.table)))); % DEL values are scaled with this value in the cost function
-Pref_plot   = zeros(iterations,1)';
 
 % Calculate windspeed distribution in wind-aligned frame
-windSpeed                = hypot(siteStruct.uInfIf,siteStruct.vInfIf); % Static Wind Speed [m/s]
-windDirection            = atand(siteStruct.vInfIf/siteStruct.uInfIf); % Nominal wind direction
-windInflowDistribution   = windDirection+optimStruct.windUncertainty;  % Uncertain wind directions
+windSpeed = hypot(siteStruct.uInfIf,siteStruct.vInfIf); % Static Wind Speed [m/s]
+windDirection = atand(siteStruct.vInfIf/siteStruct.uInfIf); % Nominal wind direction
+windInflowDistribution = windDirection+optS.windUncertainty;  % Uncertain wind directions
 weightsInflowUncertainty = gaussianWindDistribution(windInflowDistribution,plotResults); % Weights for inflow
 
 % Initialize empty GT-theory matrices
 [J_Pws_opt,J_sum_opt] = deal(-1e10);
-J_DEL_opt             = 1e10;
-yaw                   = yawinit*ones(N,1);
-yaw_opt               = yawinit*ones(iterations,N);
-a                     = ainit*ones(N,1);
-a_opt                 = ainit*ones(iterations,N); 
+J_DEL_opt = 1e10;
+yaw     = optS.initYaw*ones(N,1);
+yaw_opt = zeros(it,N);
+yaw_tries = zeros(it,N);
+a = optS.initA*ones(N,1);
+a_opt = zeros(it,N);
+a_tries = zeros(it,N);
+Ptot_inflows   = zeros(1,length(windInflowDistribution));
+DELtot_inflows = zeros(1,length(windInflowDistribution));
 
 % Perform game-theoretic optimization
-disp([datestr(rem(now,1)) ': Starting GT optimization using FLORIS. [Iterations: ' num2str(iterations) '. Calls to FLORIS: ' num2str(iterations*length(windInflowDistribution)) ']']); tic;
-for k = 1:iterations  % k is the number of iterations
-    if(~rem(k*100/iterations,10)); disp([datestr(rem(now,1)) ':  ' num2str(k*100/iterations) '% completed.']); end;
+disp([datestr(rem(now,1)) ': Starting GT optimization using FLORIS. [Iterations: ' num2str(it) '. Calls to FLORIS: ' num2str(it*length(windInflowDistribution)) ']']); tic;
+for k = 1:it  % k is the number of iterations
+    if(~rem(k*100/it,10)); disp([datestr(rem(now,1)) ':  ' num2str(k*100/it) '% completed.']); end
     
     % For k == 1 do a baseline run, otherwise randomize yaw angles
     if k > 1
         for i = 1:N                 % For each WT
             R1 = rand();            % Random value between [0 1]
             R2 = rand();
-            E = 1-k/iterations;     % Sensitivity linearly related to iteration
+            E = 1-k/it;     % Sensitivity linearly related to iteration
             if R1 < E
-                R3 = normrnd(0,0.2); % Perturb with random value
-                a(i) = max(min(a_opt(i)+R3,amax),amin);
+                R3 = normrnd(0,0.1); % Perturb with random value
+                a(i) = max(min(a_opt(k-1,i)+R3,optS.maxA),optS.minA);
             else
                 a(i) = a_opt(k-1,i);  
             end
             if R2 < E
-                R4 = normrnd(0,35);
-                yaw(i) = max(min(yaw_opt(i)+R4,yawmax),yawmin);
+                R4 = normrnd(0,15);
+                yaw(i) = max(min(yaw_opt(k-1,i)+R4,optS.maxYaw),optS.minYaw);
             else
                 yaw(i) = yaw_opt(k-1,i);
             end
@@ -76,14 +73,15 @@ for k = 1:iterations  % k is the number of iterations
         Ptot   = sum(P);
         DELtot = sum(DEL);
         
-        Ptot_inflows(1,jj)   = Ptot;   % Store results for each wind direction
-        DELtot_inflows(1,jj) = DELtot; % Store results for each wind direction
+        Ptot_inflows(jj)   = Ptot;   % Store results for each wind direction
+        DELtot_inflows(jj) = DELtot; % Store results for each wind direction
     end
     
     % Calculate collective results over entire wind rose
-    sum_Ptot    = Ptot_inflows   * weightsInflowUncertainty;  % Inflow uncertainty-weighed generated power
-    sum_DELtot  = DELtot_inflows * weightsInflowUncertainty;  % Inflow uncertainty-weighed turbine DEL values
-    sum_PDELtot = optConst*((Pref-sum_Ptot)/Pbandwidth)^2 + (1-optConst)*sum_DELtot/DELbaseline; % Generate combined power and loads cost function
+    sum_Ptot    = Ptot_inflows   * weightsInflowUncertainty; % Inflow uncertainty-weighed generated power
+    sum_DELtot  = DELtot_inflows * weightsInflowUncertainty; % Inflow uncertainty-weighed turbine DEL values
+    sum_PDELtot = optS.optConst*((optS.Pref-sum_Ptot)/optS.Pbandwidth)^2 +...
+        (1-optS.optConst)*sum_DELtot/DELbaseline;            % Generate combined power and loads cost function
     
     if (sum_PDELtot < J_sum_opt | k == 1)
         a_opt(k,:)       = a;
@@ -91,8 +89,8 @@ for k = 1:iterations  % k is the number of iterations
         J_Pws_opt(k)     = sum_Ptot;
         J_DEL_opt(k)     = sum_DELtot;
         J_sum_opt(k)     = sum_PDELtot;
-        J_sum_sub_DEL(k) = (1-optConst)*sum_DELtot/DELbaseline;
-        J_sum_sub_P(k)   = optConst*((Pref-sum_Ptot)/Pbandwidth)^2;
+        J_sum_sub_DEL(k) = (1-optS.optConst)*sum_DELtot/DELbaseline;
+        J_sum_sub_P(k)   = optS.optConst*((optS.Pref-sum_Ptot)/optS.Pbandwidth)^2;
     else % if no improvements: keep optimal solution
         a_opt(k,:)       = a_opt(k-1,:);
         yaw_opt(k,:)     = yaw_opt(k-1,:);
@@ -103,9 +101,11 @@ for k = 1:iterations  % k is the number of iterations
         J_sum_sub_P(k)   = J_sum_sub_P(k-1);
     end
     
-    Pref_plot(k) = Pref;
+    a_tries(k,:) = a;
+    yaw_tries(k,:) = yaw;
+    Pref_plot(k) = optS.Pref;
     
-    if k > 0.05*iterations
+    if k > 0.05*it
         J_sum_opt_95(k)     = J_sum_opt(k);
         J_sum_sub_DEL_95(k) = J_sum_sub_DEL(k);
         J_sum_sub_P_95(k)   = J_sum_sub_P(k);
