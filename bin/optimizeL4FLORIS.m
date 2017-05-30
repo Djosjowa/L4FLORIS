@@ -5,9 +5,12 @@ iterations  = optimStruct.iterations;
 yawmin      = optimStruct.minYaw;
 yawmax      = optimStruct.maxYaw;
 yawinit     = optimStruct.initYaw;
+yawstep     = optimStruct.stepYaw;
 amin        = optimStruct.minA;
 amax        = optimStruct.maxA;
 ainit       = optimStruct.initA;
+astep       = optimStruct.stepA;
+eps         = optimStruct.eps;
 N           = size(siteStruct.LocIF,1); % Number of turbines
 DELbaseline = mean(mean(mean(mean(LUT.table)))); % DEL values are scaled with this value in the cost function
 Pref_plot   = zeros(iterations,1)';
@@ -23,8 +26,10 @@ weightsInflowUncertainty = gaussianWindDistribution(windInflowDistribution,plotR
 J_DEL_opt             = 1e10;
 yaw                   = yawinit*ones(N,1);
 yaw_opt               = yawinit*ones(iterations,N);
+yaw_gt                = [yawmin:yawstep:yawmax];
 a                     = ainit*ones(N,1);
-a_opt                 = ainit*ones(iterations,N); 
+a_opt                 = ainit*ones(iterations,N);
+a_gt                  = [amin:astep:amax];
 
 % Perform game-theoretic optimization
 disp([datestr(rem(now,1)) ': Starting GT optimization using FLORIS. [Iterations: ' num2str(iterations) '. Calls to FLORIS: ' num2str(iterations*length(windInflowDistribution)) ']']); tic;
@@ -36,16 +41,16 @@ for k = 1:iterations  % k is the number of iterations
         for i = 1:N                 % For each WT
             R1 = rand();            % Random value between [0 1]
             R2 = rand();
-            E = 1-k/iterations;     % Sensitivity linearly related to iteration
+            E = 1-eps;%k/iterations;     % Sensitivity linearly related to iteration
             if R1 < E
-                R3 = normrnd(0,0.2); % Perturb with random value
-                a(i) = max(min(a_opt(i)+R3,amax),amin);
+                R3 = unidrnd(length(a_gt)); % Perturb with random value
+                a(i) = a_gt(R3);
             else
                 a(i) = a_opt(k-1,i);  
             end
             if R2 < E
-                R4 = normrnd(0,35);
-                yaw(i) = max(min(yaw_opt(i)+R4,yawmax),yawmin);
+                R4 = unidrnd(length(yaw_gt));
+                yaw(i) = yaw_gt(R4);
             else
                 yaw(i) = yaw_opt(k-1,i);
             end
