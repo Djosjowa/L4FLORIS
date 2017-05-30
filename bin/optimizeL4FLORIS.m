@@ -1,14 +1,16 @@
-function[a_opt,yaw_opt,J_Pws_opt,J_DEL_opt,J_sum_opt] = optimizeL4FLORIS(modelStruct,turbType,siteStruct,optimStruct,LUT,Pref, Pbandwidth,plotResults)
+function[a_opt,yaw_opt,J_Pws_opt,J_DEL_opt,J_sum_opt] = optimizeL4FLORIS(modelStruct,turbType,siteStruct,optimStruct,LUT,Pref,Pbandwidth,plotResults)
 % Optimization parameters
-optConst   = optimStruct.optConst;
-iterations = optimStruct.iterations;
-amin       = optimStruct.minA;
-amax       = optimStruct.maxA;
-yawmin     = optimStruct.minYaw;
-yawmax     = optimStruct.maxYaw;
-N          = size(siteStruct.LocIF,1); % Number of turbines
+optConst    = optimStruct.optConst;
+iterations  = optimStruct.iterations;
+yawmin      = optimStruct.minYaw;
+yawmax      = optimStruct.maxYaw;
+yawinit     = optimStruct.initYaw;
+amin        = optimStruct.minA;
+amax        = optimStruct.maxA;
+ainit       = optimStruct.initA;
+N           = size(siteStruct.LocIF,1); % Number of turbines
 DELbaseline = mean(mean(mean(mean(LUT.table)))); % DEL values are scaled with this value in the cost function
-Pref_plot  = zeros(iterations,1)';
+Pref_plot   = zeros(iterations,1)';
 
 % Calculate windspeed distribution in wind-aligned frame
 windSpeed                = hypot(siteStruct.uInfIf,siteStruct.vInfIf); % Static Wind Speed [m/s]
@@ -19,10 +21,10 @@ weightsInflowUncertainty = gaussianWindDistribution(windInflowDistribution,plotR
 % Initialize empty GT-theory matrices
 [J_Pws_opt,J_sum_opt] = deal(-1e10);
 J_DEL_opt             = 1e10;
-yaw                   = zeros(N,1);
-yaw_opt               = zeros(iterations,N);
-a                     = .25*ones(N,1);
-a_opt                 = .25*ones(iterations,N); 
+yaw                   = yawinit*ones(N,1);
+yaw_opt               = yawinit*ones(iterations,N);
+a                     = ainit*ones(N,1);
+a_opt                 = ainit*ones(iterations,N); 
 
 % Perform game-theoretic optimization
 disp([datestr(rem(now,1)) ': Starting GT optimization using FLORIS. [Iterations: ' num2str(iterations) '. Calls to FLORIS: ' num2str(iterations*length(windInflowDistribution)) ']']); tic;
@@ -58,7 +60,7 @@ for k = 1:iterations  % k is the number of iterations
         input.a   = a;
         input.yaw = yaw;
         
-        [turbines, wakes, wtRows] = run_floris(input,modelStruct,turbType,siteStruct);
+        [turbines,wakes] = run_floris(input,modelStruct,turbType,siteStruct);
         
         [P,DEL]  = deal(zeros(1,N));
         LUTparam = struct('Dwake',[],'U_fs',[],'yaw',num2cell(zeros(1,N)),'yWake',[]);
