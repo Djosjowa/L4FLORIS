@@ -3,26 +3,23 @@ function[output] = optimizeL4FLORIS(modelStruct,turbType,siteStruct,optS,LUT,plo
 % Optimization parameters
 N           = size(siteStruct.LocIF,1);  % Number of turbines
 it          = optS.iterations;           % Number of iterations
-Pref_plot   = zeros(it,1)';
-DELbaseline = mean2(LUT.table);          % DEL values are scaled with this value in the cost function
+DELbaseline = mean2(LUT.table);          % Baseline DEL value for cost function
 
 % Calculate windspeed distribution in wind-aligned frame
-windSpeed = hypot(siteStruct.uInfIf,siteStruct.vInfIf); % Static Wind Speed [m/s]
-windDirection = atand(siteStruct.vInfIf/siteStruct.uInfIf); % Nominal wind direction
-windInflowDistribution = windDirection+optS.windUncertainty;  % Uncertain wind directions
-weightsInflowUncertainty = gaussianWindDistribution(windInflowDistribution,plotResults); % Weights for inflow
+windSpeed                = hypot(siteStruct.uInfIf,siteStruct.vInfIf);                      % Static Wind Speed [m/s]
+windDirection            = atand(siteStruct.vInfIf/siteStruct.uInfIf);                      % Nominal wind direction
+windInflowDistribution   = windDirection+optS.windUncertainty;                              % Uncertain wind directions
+weightsInflowUncertainty = gaussianWindDistribution(windInflowDistribution,plotResults);    % Weights for inflow
 
 % Initialize empty GT-theory matrices
-[J_Pws_opt,J_sum_opt] = deal(-1e10);
+[J_Pws_opt,J_sum_opt]             = deal(-1e10);%deal(zeros(1,it));
+[yaw_opt,yaw_tries,a_opt,a_tries] = deal(zeros(it,N));
+[Ptot_inflows,DELtot_inflows]     = deal(zeros(1,length(windInflowDistribution)));
+
 J_DEL_opt = 1e10;
-yaw     = optS.initYaw*ones(N,1);
-yaw_opt = zeros(it,N);
-yaw_tries = zeros(it,N);
-a = optS.initA*ones(N,1);
-a_opt = zeros(it,N);
-a_tries = zeros(it,N);
-Ptot_inflows   = zeros(1,length(windInflowDistribution));
-DELtot_inflows = zeros(1,length(windInflowDistribution));
+yaw       = optS.initYaw*ones(N,1);
+a         = optS.initA*ones(N,1);
+Pref_plot = zeros(it,1)';
 
 % Perform game-theoretic optimization
 disp([datestr(rem(now,1)) ': Starting GT optimization using FLORIS. [Iterations: ' num2str(it) '. Calls to FLORIS: ' num2str(it*length(windInflowDistribution)) ']']); tic;
@@ -84,7 +81,7 @@ for k = 1:it  % k is the number of iterations
     sum_PDELtot = optS.optConst*((optS.Pref-sum_Ptot)/optS.Pbandwidth)^2 +...
         (1-optS.optConst)*sum_DELtot/DELbaseline;            % Generate combined power and loads cost function
     
-    if (sum_PDELtot < J_sum_opt | k == 1)
+    if (k == 1 | sum_PDELtot < J_sum_opt)
         a_opt(k,:)       = a;
         yaw_opt(k,:)     = yaw;
         J_Pws_opt(k)     = sum_Ptot;
@@ -117,13 +114,15 @@ for k = 1:it  % k is the number of iterations
     end
     
 end
-disp([datestr(rem(now,1)) ': Elapsed time is ' num2str(toc) ' seconds.']);
 
 %% Plotting results
 if plotResults
-    disp([datestr(rem(now,1)) ': Plotting results...'])
-    disp(a_opt(k,:));
-    disp(yaw_opt(k,:));
+    disp(' ')
+    disp('Optimal axial induction factors:')
+    disp(a_opt(k,:))
+    disp('Optimal yaw angles:')
+    disp(yaw_opt(k,:))
+    disp('Plotting results...')
     
     figure 
     % Cost function
@@ -169,6 +168,7 @@ if plotResults
     plots.plot3DFlow = false ; % 3DflowFieldvisualisation in wind-aligned frametimer.script = tic;
     run_floris(input,modelStruct,turbType,siteStruct,plots);
 end
+disp([datestr(rem(now,1)) ': Elapsed time is ' num2str(toc) ' seconds.']);
 
 % Send desired output to workspace
 output.a_opt     = a_opt;

@@ -4,7 +4,7 @@ addpath('bin\FLORISSE_M');           % add FLORIS model files
 addpath('bin\FLORISSE_M\functions'); % add FLORIS model functions
 
 % Plot results
-plotResults = true;    % Switch plots on or off
+plotResults = true;%false;    % Switch plots on or off 
 
 % Import DEL look-up table
 load('./LUT_database/4D_LUT_complete_cleaned.mat'); % Load LUT of choice
@@ -32,13 +32,13 @@ siteStruct.rho      = 1.1716;   % Atmospheric air density (kg/m3)
 
 % Setup optimization settings
 optimStruct.optConst        = 0.5;              % Tuning parameter of the cost function. Power only = 1, Loads only = 0.
-optimStruct.iterations      = 10;                % Optimization iterations
+optimStruct.iterations      = 10;               % Optimization iterations
 optimStruct.minYaw          = -30;              % Smallest yaw angle [deg]
 optimStruct.maxYaw          = +30;              % Largest  yaw angle [deg]
 optimStruct.initYaw         = 0;                % Yaw angle used for first iteration [deg]
 optimStruct.minA            = 0;                % Smallest axial induction factor
 optimStruct.maxA            = 1/3;              % Largest axial induction factor
-optimStruct.initA           = 0.115;            % Axial induction factor used for first iteration
+optimStruct.initA           = 0.05;             % Axial induction factor used for first iteration
 optimStruct.windUncertainty = [-12:4:12];       % Additional wind disturbance range (symmetric)
 optimStruct.Pref            = 10*10^6;          % Reference power [W]
 optimStruct.Pbandwidth      = 0.05*10^6;        % Bandwidth power [W]
