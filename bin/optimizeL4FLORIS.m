@@ -1,4 +1,5 @@
-function[a_opt,a_tries,yaw_opt,yaw_tries,J_Pws_opt,J_DEL_opt,J_sum_opt] = optimizeL4FLORIS(modelStruct,turbType,siteStruct,optS,LUT,plotResults)
+function[output] = optimizeL4FLORIS(modelStruct,turbType,siteStruct,optS,LUT,plotResults)
+
 % Optimization parameters
 N = size(siteStruct.LocIF,1); % Number of turbines
 it = optS.iterations; % Number of iterations
@@ -121,8 +122,8 @@ disp([datestr(rem(now,1)) ': Elapsed time is ' num2str(toc) ' seconds.']);
 %% Plotting results
 if plotResults
     disp([datestr(rem(now,1)) ': Plotting results...'])
-        disp(a_opt(k,:));
-        disp(yaw_opt(k,:));
+    disp(a_opt(k,:));
+    disp(yaw_opt(k,:));
     
     figure 
     % Cost function
@@ -168,4 +169,13 @@ if plotResults
     plots.plot3DFlow = false ; % 3DflowFieldvisualisation in wind-aligned frametimer.script = tic;
     run_floris(input,modelStruct,turbType,siteStruct,plots);
 end
+
+% Send desired output to workspace
+output.a_opt    = a_opt;
+output.a_tries  = a_tries;
+output.yaw_opt  = yaw_opt;
+output.yaw_tries = yaw_tries;
+output.J_Pws_opt = J_Pws_opt;
+output.J_DEL_opt = J_DEL_opt;
+output.J_sum_opt = J_sum_opt;
 end
