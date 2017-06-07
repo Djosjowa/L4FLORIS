@@ -1,10 +1,10 @@
 function[output] = optimizeL4FLORIS(modelStruct,turbType,siteStruct,optS,LUT,plotResults)
 
 % Optimization parameters
-N = size(siteStruct.LocIF,1); % Number of turbines
-it = optS.iterations; % Number of iterations
-Pref_plot = zeros(it,1)';
-DELbaseline = mean(mean(mean(mean(LUT.table)))); % DEL values are scaled with this value in the cost function
+N           = size(siteStruct.LocIF,1);  % Number of turbines
+it          = optS.iterations;           % Number of iterations
+Pref_plot   = zeros(it,1)';
+DELbaseline = mean2(LUT.table);          % DEL values are scaled with this value in the cost function
 
 % Calculate windspeed distribution in wind-aligned frame
 windSpeed = hypot(siteStruct.uInfIf,siteStruct.vInfIf); % Static Wind Speed [m/s]
@@ -171,11 +171,12 @@ if plotResults
 end
 
 % Send desired output to workspace
-output.a_opt    = a_opt;
-output.a_tries  = a_tries;
-output.yaw_opt  = yaw_opt;
+output.a_opt     = a_opt;
+output.a_tries   = a_tries;
+output.yaw_opt   = yaw_opt;
 output.yaw_tries = yaw_tries;
 output.J_Pws_opt = J_Pws_opt;
 output.J_DEL_opt = J_DEL_opt;
 output.J_sum_opt = J_sum_opt;
+
 end
