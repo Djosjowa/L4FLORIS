@@ -13,7 +13,7 @@ weightsInflowUncertainty = gaussianWindDistribution(windInflowDistribution,plotR
 
 % Initialize empty GT-theory matrices
 [J_Pws_opt,J_DEL_opt,J_sum_sub_DEL,J_sum_sub_P,...
-    J_sum_opt_95,J_sum_sub_DEL_95,J_sum_sub_P_95]   = zeros(1,it);
+    J_sum_opt_95,J_sum_sub_DEL_95,J_sum_sub_P_95]   = deal(zeros(1,it));
 [yaw_opt,yaw_tries,a_opt,a_tries]                   = deal(zeros(it,N));
 [Ptot_inflows,DELtot_inflows]                       = deal(zeros(1,length(windInflowDistribution)));
 
