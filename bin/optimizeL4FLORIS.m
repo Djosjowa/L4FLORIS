@@ -1,5 +1,5 @@
 function[output] = optimizeL4FLORIS(modelStruct,turbType,siteStruct,optS,LUT,plotResults)
-
+%% Initialization
 % Optimization parameters
 N           = size(siteStruct.LocIF,1);  % Number of turbines
 it          = optS.iterations;           % Number of iterations
@@ -12,35 +12,36 @@ windInflowDistribution   = windDirection+optS.windUncertainty;                  
 weightsInflowUncertainty = gaussianWindDistribution(windInflowDistribution,plotResults);    % Weights for inflow
 
 % Initialize empty GT-theory matrices
-[J_Pws_opt,J_sum_opt]             = deal(-1e10);%deal(zeros(1,it));
-[yaw_opt,yaw_tries,a_opt,a_tries] = deal(zeros(it,N));
-[Ptot_inflows,DELtot_inflows]     = deal(zeros(1,length(windInflowDistribution)));
+[J_Pws_opt,J_DEL_opt,J_sum_sub_DEL,J_sum_sub_P,...
+    J_sum_opt_95,J_sum_sub_DEL_95,J_sum_sub_P_95]   = zeros(1,it);
+[yaw_opt,yaw_tries,a_opt,a_tries]                   = deal(zeros(it,N));
+[Ptot_inflows,DELtot_inflows]                       = deal(zeros(1,length(windInflowDistribution)));
 
-J_DEL_opt = 1e10;
+J_sum_opt = -1e10;
 yaw       = optS.initYaw*ones(N,1);
 a         = optS.initA*ones(N,1);
 Pref_plot = zeros(it,1)';
 
-% Perform game-theoretic optimization
+%% Game-theoretic optimization
 disp([datestr(rem(now,1)) ': Starting GT optimization using FLORIS. [Iterations: ' num2str(it) '. Calls to FLORIS: ' num2str(it*length(windInflowDistribution)) ']']); tic;
-for k = 1:it  % k is the number of iterations
+for k = 1:it  % k is the iteration number of the GT optimization
     if(~rem(k*100/it,10)); disp([datestr(rem(now,1)) ':  ' num2str(k*100/it) '% completed.']); end
     
-    % For k == 1 do a baseline run, otherwise randomize yaw angles
+    % For k == 1 a baseline run is executed, for k > 1 randomize yaw angles
     if k > 1
-        for i = 1:N                 % For each WT
-            R1 = rand();            % Random value between [0 1]
+        for i = 1:N                  % For each WT
+            R1 = rand();             % Uniform distributed random value between [0 1]
             R2 = rand();
-            E = 1-k/it;     % Sensitivity linearly related to iteration
-            if R1 < E
-                R3 = normrnd(0,0.1); % Perturb with random value
-                a(i) = max(min(a_opt(k-1,i)+R3,optS.maxA),optS.minA);
+            E = 1-k/it;              % Sensitivity linearly related to current iteration
+            if R1 < E                % Take a step if R1 < the sensitivity
+                R3 = normrnd(0,0.1); % Perturb with normally distributed random value
+                a(i) = max(min(a_opt(k-1,i)+R3,optS.maxA),optS.minA); % Perturb axial induction factor, with stepsize R3, from the latest baseline value
             else
-                a(i) = a_opt(k-1,i);  
+                a(i) = a_opt(k-1,i); % Save latest baseline value
             end
             if R2 < E
                 R4 = normrnd(0,15);
-                yaw(i) = max(min(yaw_opt(k-1,i)+R4,optS.maxYaw),optS.minYaw);
+                yaw(i) = max(min(yaw_opt(k-1,i)+R4,optS.maxYaw),optS.minYaw); % Perturb yaw angle, with stepsize R4, from the latest baseline value
             else
                 yaw(i) = yaw_opt(k-1,i);
             end
@@ -55,16 +56,16 @@ for k = 1:it  % k is the number of iterations
         input.a   = a;
         input.yaw = yaw;
         
-        [turbines,wakes] = run_floris(input,modelStruct,turbType,siteStruct);
+        [turbines,wakes] = run_floris(input,modelStruct,turbType,siteStruct);   % Execute FLORIS model
         
         [P,DEL]  = deal(zeros(1,N));
         LUTparam = struct('Dwake',[],'U_fs',[],'yaw',num2cell(zeros(1,N)),'yWake',[]);
         
-        for turbi = 1:N
-            LUTparam(turbi) = create_LUTparam(turbi,turbines,wakes,LUTparam(turbi));
-            P(turbi) = turbines(turbi).power;
-            % -- Look up DEL values for flow field with C2C, Dw, Ueff
-            DEL(turbi)= interpn(LUT.Dwake,LUT.U_fs,LUT.yaw,LUT.yWake,...
+        for turbi = 1:N                                                                 % For each turbine
+            P(turbi)        = turbines(turbi).power;                                    % Power as calculated by the FLORIS model [N]
+            
+            LUTparam(turbi) = create_LUTparam(turbi,turbines,wakes,LUTparam(turbi));    % Extract LUT parameters from the FLORIS model
+            DEL(turbi)      = interpn(LUT.Dwake,LUT.U_fs,LUT.yaw,LUT.yWake,...          % Linear interpolation in LookUp Table
                                 LUT.table,LUTparam(turbi).Dwake,LUTparam(turbi).U_fs,LUTparam(turbi).yaw,LUTparam(turbi).yWake); 
         end
         
@@ -118,9 +119,9 @@ end
 %% Plotting results
 if plotResults
     disp(' ')
-    disp('Optimal axial induction factors:')
+    disp('Optimized axial induction factors:')
     disp(a_opt(k,:))
-    disp('Optimal yaw angles:')
+    disp('Optimized yaw angles:')
     disp(yaw_opt(k,:))
     disp('Plotting results...')
     

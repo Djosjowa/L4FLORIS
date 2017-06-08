@@ -32,7 +32,7 @@ siteStruct.rho      = 1.1716;   % Atmospheric air density (kg/m3)
 
 % Setup optimization settings
 optimStruct.optConst        = 0.5;              % Tuning parameter of the cost function. Power only = 1, Loads only = 0.
-optimStruct.iterations      = 10;               % Optimization iterations
+optimStruct.iterations      = 100;               % Optimization iterations
 optimStruct.minYaw          = -30;              % Smallest yaw angle [deg]
 optimStruct.maxYaw          = +30;              % Largest  yaw angle [deg]
 optimStruct.initYaw         = 0;                % Yaw angle used for first iteration [deg]
